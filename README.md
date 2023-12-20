@@ -26,9 +26,8 @@ Detection of pseudouridine, m6A, m5C, and ac4C on individual molecules from dire
 # Dependencies
 ------------------------------------------
 ```
-python=3.7
+python=3.9
 numpy==1.19.2
-pandas==1.3.4
 tensorflow-gpu==2.4.1
 keras-preprocessing==1.1.2
 ```
@@ -87,7 +86,7 @@ rm -rf  $TEMPDIR
 ### f5c
 
 Our workflow supports both f5c sam and nanopolish tsv formats.
-We highly recommend opting for f5c and sam files.
+We highly recommend opting for **f5c** and **sam** files.
 This requires the slow5 conversion outlined in previous step.
 
 https://github.com/hasindu2008/f5c
@@ -131,57 +130,64 @@ This step is highly recommended and required for using our C++ preprocessing of 
 
 
 ```
-#build and compile htslib and slow5tools
+cd SWARM_scripts/preprocessing/
+
+#build and compile htslib, slow5tools, SWARM_preprocess
 bash build.sh
 
-#compile SWARM executable
-make
 ```
 
-## Read-level detection
+## Read-level single-base detection
 
 ### sam + slow5 preprocessing (preferred)
 
-Our preferred approach relies on gnu parallel which should be available on most HPC systems. 
-Alternatively, preprocessing and prediction can be run separately, but that involves large temp files.
+Use this approach for faster and simultaneous preprocessing + model inference. Run build.sh from above section.
 
+Tensorflow (GPU-configured) should be available on most HPC systems with GPU access. 
+Otherwise, it is highly advised to use tensorflow configured for GPU. https://www.tensorflow.org/install/
 
 Example bash code to run SWARM read-level prediction.
 
 ```
-module load tensorflow/2.8.0
-module load parallel
+module load tensorflow
 
 
-predict_m1 () {
-        SCRIPT=predict_model1_SWARM_bin_parallel.py
-        MODEL=Model_100_epoch_relu.h5
-        PATH_OUT=HepG2_mRNA_IVT_rep1.pred.tsv
-        PATH_IN=temp.cpp.binh1
-        python3 $SCRIPT -i $PATH_IN -o $PATH_OUT -m $MODEL -l Hep2G_1
-}
-export -f predict_m1
+export MOD=pU
+export FASTA=Homo_sapiens.GRCh38.cdna.fa
+export RAW=Hek293_mRNA.blow5
+export SAM=Hek293_mRNA_f5C.sam
+export OUT=HeLa_mRNA_pU
+export TEMP=$PBS_JOBFS     #for optional speed up provide SSD path if available ( such as jobfs on PBS systems)
 
-
-preprocess_cpp () {
-        SCRIPT_CPP=SWARM2.15
-        SAM=HepG2_mRNA_IVT_rep1.event.sam
-        BLOW5=HepG2_IVT_rep1_fast5.blow5
-        FASTA=Homo_sapiens.GRCh38.cdna.all.fa
-        MODEL_KMER=IVT_model_c++.csv
-        OUT=temp.cpp.binh1
-        BASE=T
-        $SCRIPT_CPP --sam $SAM --raw $BLOW5 --fasta $FASTA -m $MODEL_KMER -o $OUT --base $BASE
-}
-
-export -f preprocess_cpp
-
-
-parallel ::: preprocess_cpp predict_m1
+python3 ./SWARM_scripts/SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $RAW -o $OUT --temp $TEMP
 ```
 
 ### eventalign.tsv preprocessing
 
+Alternatively, preprocessing and prediction can be run separately from eventalign.tsv, but that involves large temp files.
+
+First preprocess the event alignments.
+
+```
+
+export MOD=pU
+export BAM=Hek293_mRNA_f5C.bam
+export EVENTS=Hek293_mRNA.events.tsv
+export OUT=HeLa_mRNA_pU
+
+python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m $MOD --bam BAM --nanopolish $EVENTS -o $OUT
+```
+
+Then predict modification states.
+
+```
+
+export MOD=pU
+export PICKLE=HeLa_mRNA_pU_T.pickle
+export OUT=HeLa_mRNA_pU.pred.tsv
+
+python3 ./SWARM_scripts/SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -o $OUT
+```
 
 
 ## Site-level detection
