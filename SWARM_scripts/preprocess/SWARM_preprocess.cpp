@@ -21,8 +21,6 @@
 using namespace std;
 
 
-/// To fix: dependency on absolute path for using htslib
-
 
 struct kmerStruct {
     array<int, 2> eventIndex;
@@ -308,7 +306,7 @@ int main(int argc, char *argv[]) {
         int contigNameLength = strlen(contigName);
 
 
-        // cout << "HERE   " << contigName[0] << endl;
+        
 
         // Check if the read is aligned
         if (!(samRecord->core.flag & BAM_FUNMAP)) {
