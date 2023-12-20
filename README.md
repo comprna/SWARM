@@ -18,7 +18,7 @@ Detection of pseudouridine, m6A, m5C, and ac4C on individual molecules from dire
    
    * [Detect RNA modificatios](#detect-rna-modifications)
      * [Installation](#installation)
-     * [Read-level detection](#read-level-detection)
+     * [Read-level single-base detection](#read-level-single-base-detection)
      * [Site-level detection](#site-level-detection)
    * [Train new models](train-new-models)
 
