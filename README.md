@@ -156,7 +156,7 @@ export MOD=pU
 export FASTA=Homo_sapiens.GRCh38.cdna.fa
 export RAW=Hek293_mRNA.blow5
 export SAM=Hek293_mRNA_f5C.sam
-export OUT=HeLa_mRNA_pU
+export OUT=Hek293_mRNA_pU
 export TEMP=$PBS_JOBFS     #for optional speed up provide SSD path if available ( such as jobfs on PBS systems)
 
 python3 ./SWARM_scripts/SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $RAW -o $OUT --temp $TEMP
@@ -173,7 +173,7 @@ First preprocess the event alignments.
 export MOD=pU
 export BAM=Hek293_mRNA_f5C.bam
 export EVENTS=Hek293_mRNA.events.tsv
-export OUT=HeLa_mRNA_pU
+export OUT=Hek293_mRNA_pU
 
 python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m $MOD --bam BAM --nanopolish $EVENTS -o $OUT
 ```
@@ -183,8 +183,8 @@ Then predict modification states.
 ```
 
 export MOD=pU
-export PICKLE=HeLa_mRNA_pU_T.pickle
-export OUT=HeLa_mRNA_pU.pred.tsv
+export PICKLE=Hek293_mRNA_pU_T.pickle
+export OUT=Hek293_mRNA_pU.pred.tsv
 
 python3 ./SWARM_scripts/SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -o $OUT
 ```
