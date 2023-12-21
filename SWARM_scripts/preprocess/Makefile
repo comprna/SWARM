@@ -2,9 +2,9 @@ EXEC=SWARM_preprocess
 CC=g++
 
 
-CFLAGS=-fno-strict-aliasing -DLINUX_ -DOC_NEW_STYLE_INCLUDES -Wno-deprecated -I./htslib-1.18/ -I./slow5lib/include -pthread -D_REENTRANT
+CFLAGS=-fno-strict-aliasing -DLINUX_ -DOC_NEW_STYLE_INCLUDES -Wno-deprecated -I./htslib-1.19/ -I./slow5lib/include -pthread -D_REENTRANT
 
-LDFLAGS=-L./htslib-1.18/ -L./slow5lib/lib/  -Wl,-R${PWD}/htslib-1.18/ -Wl,-R${PWD}/slow5lib/lib/ -lhts -lslow5
+LDFLAGS=-L./htslib-1.19/ -L./slow5lib/lib/  -Wl,-R${PWD}/htslib-1.19/ -Wl,-R${PWD}/slow5lib/lib/ -lhts -lslow5
 
 all: $(EXEC)
 
