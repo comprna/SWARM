@@ -38,8 +38,7 @@ keras-preprocessing==1.1.2
 ------------------------------------------
 
 ## Basecalling
-We trained on signals basecalled with guppy 6.4.6 
-
+SWARM was trained on signals basecalled with guppy 6.4.6 
 
 Recommended parameters:
 ```
@@ -48,10 +47,10 @@ guppy_basecaller -i $INPUTDIR --recursive -s $output_path -c guppy/ont-guppy/dat
 
 
 ## Alignment
-We used minimap 2.24 for alignment and samtools 1.12 for quality checks
+minimap 2.24 for alignment and samtools 1.12 for quality checks
 
 Recommended parameters:
--k 5 for curlcakes and -k 14 for standard human transcriptomes 
+-k 5 for sythetic IVTs and -k 14 for human transcriptomes 
 
 ```
 minimap2 -ax map-ont -k 5 ${fasta} ${input_path}/guppy_pass.fastq | samtools sort -o ${output_path}.bam
@@ -84,7 +83,6 @@ rm -rf  $TEMPDIR
 ## Event alignment
 
 ### f5c
-
 Our workflow supports both f5c sam and nanopolish tsv formats.
 We highly recommend opting for **f5c** and **sam** files.
 This requires the slow5 conversion outlined in previous step.
@@ -102,9 +100,8 @@ f5c  eventalign -t 48  -r $FASTQ_PATH --rna  -g $genome -b $BAM --slow5 $SLOW5_P
 ```
 
 ### nanopolish
-
 We used this format in earlier stages of the project, our workflow can still support it.
-Note that our workflow is optimised for f5c sam format.
+Note that our prediction workflow is optimised for f5c sam format.
 
 https://github.com/jts/nanopolish
 
@@ -124,12 +121,11 @@ nanopolish eventalign -t 48 --reads $fastq --bam $bam_file \
 ------------------------------------------
 
 ## Installation
-
-
 This step is highly recommended and required for using our C++ preprocessing of sam event files. Skip if using eventalign.tsv format.
 
 
 ```
+
 cd SWARM_scripts/preprocessing/
 
 #build and compile htslib, slow5tools, SWARM_preprocess
@@ -151,7 +147,6 @@ Example bash code to run SWARM read-level prediction.
 ```
 module load tensorflow
 
-
 export MOD=pU
 export FASTA=Homo_sapiens.GRCh38.cdna.fa
 export RAW=Hek293_mRNA.blow5
@@ -169,7 +164,6 @@ Alternatively, preprocessing and prediction can be run separately from eventalig
 First preprocess the event alignments.
 
 ```
-
 export MOD=pU
 export BAM=Hek293_mRNA_f5C.bam
 export EVENTS=Hek293_mRNA.events.tsv
@@ -181,7 +175,6 @@ python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m $MOD --bam BAM --nan
 Then predict modification states.
 
 ```
-
 export MOD=pU
 export PICKLE=Hek293_mRNA_pU_T.pickle
 export OUT=Hek293_mRNA_pU.pred.tsv
