@@ -73,6 +73,7 @@ def main():
     parser.add_argument("-t", "--threads", required=False, default=1,type=int, help="\nNumber of threads for preprocessing\n")
 
     parser.add_argument("-p", "--pickle", required=False, help="\nPath to the input pickle file (model1 output)\n")
+    parser.add_argument("--out_counter",help="Output counts of all 9mers for each split nanopolish file",action="store_true")
 
     args = parser.parse_args()
 
@@ -169,6 +170,8 @@ def main():
                               "-m", os.path.join(script_dir,MODEL_KMER_py),
                               "-b", args.bam,
                               "-n", args.threads]
+            if args.out_couter:
+                args_script_py.append("--out_counter")
             if args.base:
                 args_script_py+= ["--input_base",args.base]
             subprocess.run(args_script_py)
