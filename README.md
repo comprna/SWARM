@@ -211,10 +211,11 @@ python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --
 --nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
 ```
 ### Split training/validation/testing data
- Use this step for stratified sampling of the preprocessed signals. Splits equal number of signals per 9mer for positive/negative labels in each train/test/validation set (60/20/20 split by default).
+ Use this step for stratified sampling of the preprocessed signals. Splits equal number of signals per 9mer for positive/negative labels in each of train/validation/test set (60/20/20 split by default).
 ```
 python3 ./SWARM_scripts/train_models/split_training_by_9mers.py -i <preprocesed.pickle> //
---counts <preprocessed.counts> -o <outpath> --limit <signals_per_9mer>
+--counts <preprocessed.counts> -o <outpath> --limit <signals_per_9mer> //
+[--train_percent=0.6] [--validate_percent=0.2]
 ```
 
 
