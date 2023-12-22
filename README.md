@@ -121,11 +121,14 @@ nanopolish eventalign -t 48 --reads $fastq --bam $bam_file \
 ------------------------------------------
 
 ## Installation
-This step is highly recommended and required for using our C++ preprocessing of sam event files. Skip if using eventalign.tsv format.
-
-
+Simply clone from github:
+```
+git clone https://github.com/comprna/SWARM/ && cd SWARM
 ```
 
+This step is highly recommended and required for using our C++ preprocessing of sam event files. Skip if using eventalign.tsv format.
+
+```
 cd SWARM_scripts/preprocessing/
 
 #build and compile htslib, slow5tools, SWARM_preprocess
