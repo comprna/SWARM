@@ -197,3 +197,24 @@ python3 ./SWARM_scripts/SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -
 ------------------------------------------
 # Train new models
 ------------------------------------------
+## Train read-level prediction
+### Trim eventalign files
+This optional step reduces the time to regenerate models as only a percentage of 100s of millions of signals is enough for training. We trim for events comprising 500 signals per 9mer. 
+
+```
+python3 ./SWARM_scripts/train_models/trim_tsv_events.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
+```
+### Preprocess trimmed files
+Preprocess trimmed files for model1 input features. Make sure to include --out_counter arg here. 
+```
+python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
+--nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
+```
+### Split training/validation/testing data
+ 
+```
+python3 ./SWARM_scripts/train_models/split_training_by_9mers.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
+--nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
+```
+
+
