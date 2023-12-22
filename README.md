@@ -199,22 +199,22 @@ python3 ./SWARM_scripts/SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -
 ------------------------------------------
 ## Train read-level prediction
 ### Trim eventalign files
-This optional step reduces the time to regenerate models as only a percentage of 100s of millions of signals is enough for training. We trim for events comprising 500 signals per 9mer. 
+This optional step reduces the time to retrain models as preprocessing only a fraction of signals from a whole sample is usually enough for training. We trim for events comprising 500 signals per 9mer. 
 
 ```
 python3 ./SWARM_scripts/train_models/trim_tsv_events.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
 ```
 ### Preprocess trimmed files
-Preprocess trimmed files for model1 input features. Make sure to include --out_counter arg here. 
+Preprocess trimmed files for model1 input features. Make sure to include **--out_counter** arg here!
 ```
 python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
 --nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
 ```
 ### Split training/validation/testing data
- 
+ Use this step for stratified sampling of the preprocessed signals. Splits equal number of signals per 9mer for positive/negative labels in each train/test/validation set (60/20/20 split by default).
 ```
-python3 ./SWARM_scripts/train_models/split_training_by_9mers.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
---nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
+python3 ./SWARM_scripts/train_models/split_training_by_9mers.py -i <preprocesed.pickle> //
+--counts <preprocessed.counts> -o <outpath> --limit <signals_per_9mer>
 ```
 
 
