@@ -129,7 +129,7 @@ git clone https://github.com/comprna/SWARM/ && cd SWARM
 This step is highly recommended and required for using our C++ preprocessing of sam event files. Skip if using eventalign.tsv format.
 
 ```
-cd SWARM_scripts/preprocessing/
+cd SWARM_scripts/preprocess/
 
 #build and compile htslib, slow5tools, SWARM_preprocess
 bash build.sh
