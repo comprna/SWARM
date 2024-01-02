@@ -219,5 +219,10 @@ python3 ./SWARM_scripts/train_models/split_training_by_9mers.py -i <preprocesed.
 python3 ./SWARM_scripts/train_models/assemble_data.py --input_positive <positive_prefix> //
 --input_negative <negative_prefix> -o <outpath> [--positive_label 1] [--negative_label 0]
 ```
-
+### Train read-level model
+ Use this step for training binary classifier of modification states with single-base single-molecule resolution. 
+```
+python3 ./SWARM_scripts/train_models/train_model1.py -i <assembled_prefix> -o <outpath> //
+[--vector_len 36] [--features 7] [--labels 2] [--epochs 100]
+```
 
