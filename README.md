@@ -211,7 +211,7 @@ python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --
 ```
 python3 ./SWARM_scripts/train_models/split_training_by_9mers.py -i <preprocesed.pickle> //
 --counts <preprocessed.counts> -o <outpath> --limit <signals_per_9mer> //
-[--train_percent default=0.6] [--validate_percent default=0.2]
+[--train_percent 0.6] [--validate_percent 0.2]
 ```
 
 
