@@ -20,7 +20,7 @@ Detection of pseudouridine, m6A, m5C, and ac4C on individual molecules from dire
      * [Installation](#installation)
      * [Read-level single-base detection](#read-level-single-base-detection)
      * [Site-level detection](#site-level-detection)
-   * [Train new models](train-new-models)
+   * [Train new models](#train-new-models)
 
 ------------------------------------------
 # Dependencies
