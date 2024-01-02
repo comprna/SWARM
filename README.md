@@ -188,8 +188,6 @@ python3 ./SWARM_scripts/SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -
 
 ## Site-level detection
 
-## Mod-bam?
-
 ------------------------------------------
 # Train new models
 ------------------------------------------
