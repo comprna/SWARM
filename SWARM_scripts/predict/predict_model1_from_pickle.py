@@ -82,6 +82,11 @@ OPTIONAL.add_argument("--batch_size",
                           default=20000,
                           required=False)
 
+OPTIONAL.add_argument("--arch",
+                          help="Mini/Mid/Large network",
+                          default="Mini",
+                          required=False)
+
 OPTIONAL.add_argument('-v', '--version',
                       action='version',
                       version='%(prog)s')
@@ -104,9 +109,23 @@ BATCH_SIZE =ARGS.batch_size
 resume = ARGS.resume
 
 # load the trainned model
-inputs = Input(shape=(1,int(vector_len)*5, number_of_features))
-output = readwise_prediction_network(inputs, number_of_labels)
-model = Model(inputs=inputs, outputs=output)
+inputs = Input(shape=(int(vector_len)*5, number_of_features))
+if ARGS.arch == "Large":
+            from network_2132024 import readwise_prediction_network
+            outputs = readwise_prediction_network(inputs, 1)
+
+elif ARGS.arch == "Mid":
+            from DL_models import build_Jasper
+            outputs = build_Jasper(inputs, Deep=True)
+
+elif ARGS.arch == "Mini":
+            from network_21122023 import build_jasper_model
+            outputs = build_jasper_model(inputs)
+else:
+            raise ("--arch  must be either Mini or Mid or Large")
+
+model = Model(inputs=inputs, outputs=outputs)
+
 model.load_weights(DL_model)
 
 if LIMIT == -1:
@@ -140,7 +159,7 @@ with open(signals_input, 'rb') as signal_in:
                 if counter > LIMIT:
                     if IDs:
                         predictions = model.predict(np.array(signals), batch_size = len(signals))
-                        f_out.write("\n".join([f"{IDs[index]}\t{prediction[1]}\t{label}" for index, prediction in
+                        f_out.write("\n".join([f"{IDs[index]}\t{prediction[0]}\t{label}" for index, prediction in
                                                enumerate(predictions)])+"\n")
 
                     print('All signals have been processed', counter)
@@ -161,7 +180,7 @@ with open(signals_input, 'rb') as signal_in:
                     if IDs:
                         #signal = np.array(signals)
                         predictions = model.predict(np.array(signals), batch_size = len(signals))
-                        f_out.write("\n".join([f"{IDs[index]}\t{prediction[1]}\t{label}" for index, prediction in
+                        f_out.write("\n".join([f"{IDs[index]}\t{prediction[0]}\t{label}" for index, prediction in
                                                enumerate(predictions)])+"\n")
 
                     print('All signals have been processed', counter)
@@ -170,8 +189,13 @@ with open(signals_input, 'rb') as signal_in:
                 else:
                     key, signal = next(iter(pickle_dict.items()))
                     IDs.append(key)
-                    #signals.append(np.expand_dims(np.array(list(pickle_dict.values())),axis=1))
-                    signals.append(np.expand_dims(signal, axis=0))
+                    #signals.append(np.expand_dims(np.array(list(pickle_dict.values())),axis=1)
+                    if signal.shape == (180,7):
+                        signals.append(signal)
+                    elif signal.shape == (1,180,7):
+                        signals.append(signal.reshape(180,7))
+                    else:
+                        raise("Signal shape",signal.shape, "is not compatible with (180,7) input array")
                     # to avoid loading everything predict every 20k singnals
                     if counter % BATCH_SIZE == 0:
                         if len(signals) > 0:
@@ -180,7 +204,7 @@ with open(signals_input, 'rb') as signal_in:
                             predictions = model.predict(np.array(signals), batch_size = len(signals))
                             print("predicting done in", time.time() - prediction_start)
                             writing_start = time.time()
-                            f_out.write("\n".join([f"{IDs[index]}\t{prediction[1]}\t{label}" for index, prediction in
+                            f_out.write("\n".join([f"{IDs[index]}\t{prediction[0]}\t{label}" for index, prediction in
                                                    enumerate(predictions)])+"\n")
                             print("writing done in", time.time() - writing_start)
                             IDs, signals = [],[]
