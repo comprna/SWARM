@@ -145,19 +145,20 @@ Use this approach for faster and simultaneous preprocessing + model inference. R
 Tensorflow (GPU-configured) should be available on most HPC systems with GPU access. 
 Otherwise, it is highly advised to use tensorflow configured for GPU. https://www.tensorflow.org/install/
 
-Example bash code to run SWARM read-level prediction.
+Models for RNA002 or RNA004 chemistry are automatically selected based on the blow5 data. 
+
+Example bash code to run SWARM read-level prediction:
 
 ```
 module load tensorflow
 
 export MOD=pU
 export FASTA=Homo_sapiens.GRCh38.cdna.fa
-export RAW=Hek293_mRNA.blow5
-export SAM=Hek293_mRNA_f5C.sam
-export OUT=Hek293_mRNA_pU
-export TEMP=$PBS_JOBFS     #for optional speed up provide SSD path if available ( such as jobfs on PBS systems)
+export BLOW5=Hek293_mRNA.blow5
+export SAM=Hek293_mRNA_f5C.events.sam
+export OUT=Hek293_mRNA_pU.m1.tsv
 
-python3 ./SWARM_scripts/SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $RAW -o $OUT --temp $TEMP
+python3 SWARM_scripts/SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT 
 ```
 
 ### eventalign.tsv preprocessing
