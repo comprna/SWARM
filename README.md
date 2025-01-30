@@ -158,7 +158,7 @@ export BLOW5=Hek293_mRNA.blow5
 export SAM=Hek293_mRNA_f5C.events.sam
 export OUT=Hek293_mRNA_pU.m1.tsv
 
-python3 SWARM_scripts/SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT 
+python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT 
 ```
 
 ### eventalign.tsv preprocessing
@@ -173,7 +173,7 @@ export BAM=Hek293_mRNA_f5C.bam
 export EVENTS=Hek293_mRNA.events.tsv
 export OUT=Hek293_mRNA_pU
 
-python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m $MOD --bam BAM --nanopolish $EVENTS -o $OUT
+python3 SWARM_read_level.py --preprocess -m $MOD --bam BAM --nanopolish $EVENTS -o $OUT
 ```
 
 Then predict modification states.
@@ -183,7 +183,7 @@ export MOD=pU
 export PICKLE=Hek293_mRNA_pU_T.pickle
 export OUT=Hek293_mRNA_pU.pred.tsv
 
-python3 ./SWARM_scripts/SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -o $OUT
+python3 SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -o $OUT
 ```
 
 
@@ -197,31 +197,31 @@ python3 ./SWARM_scripts/SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -
 This optional step reduces the time to retrain models as preprocessing only a fraction of signals from a whole sample is usually enough for training. We trim for events comprising 500 signals per 9mer. 
 
 ```
-python3 ./SWARM_scripts/train_models/trim_tsv_events.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
+python3 train_models/trim_tsv_events.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
 ```
 ### Preprocess trimmed files
 Preprocess trimmed files for model1 input features. Make sure to include **--out_counter** arg here!
 ```
-python3 ./SWARM_scripts/SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
+python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
 --nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
 ```
 ### Split training/validation/testing data
  Use this step for stratified sampling of the preprocessed signals. Splits equal number of signals per 9mer for positive/negative labels in each of train/validation/test set (60/20/20 split by default). Run on each sample, to make positive/negative data. Give same outpath if multiple samples are intended to be used under the same positive/negative label.
 ```
-python3 ./SWARM_scripts/train_models/split_training_by_9mers.py -i <preprocesed.pickle> //
+python3 train_models/split_training_by_9mers.py -i <preprocesed.pickle> //
 --counts <preprocessed.counts> -o <outpath> --limit <signals_per_9mer> //
 [--train_percent 0.6] [--validate_percent 0.2]
 ```
 ### Assemble data
  Use this step for finalising training/validation/testing data with matching positive/negative labels.
 ```
-python3 ./SWARM_scripts/train_models/assemble_data.py --input_positive <positive_prefix> //
+python3 train_models/assemble_data.py --input_positive <positive_prefix> //
 --input_negative <negative_prefix> -o <outpath> [--positive_label 1] [--negative_label 0]
 ```
 ### Train read-level model
  Use this step for training binary classifier of modification states with single-base single-molecule resolution. 
 ```
-python3 ./SWARM_scripts/train_models/train_model1.py -i <assembled_prefix> -o <outpath> //
+python3 train_models/train_model1.py -i <assembled_prefix> -o <outpath> //
 [--vector_len 36] [--features 7] [--labels 2] [--epochs 100]
 ```
 
