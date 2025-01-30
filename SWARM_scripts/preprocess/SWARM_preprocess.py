@@ -1,13 +1,13 @@
 """
-Created on Thur Mar 23 19:07:05 2023
-
 @author: Stefan Prodic
-Time encoding
-Normalise O-E dwellig time to 9mer models
+
+
+Same as 2.033 but outputs qscore_readBase for target base at the end of the signal's key (for downstream multi-feature model2). 0_D if deleted
+
 This code takes a nanopolish file and a bam file to generate the input for the
 4DDQ model (current,distances from A/C/G/T bases, dwelling time, q-score of the reference base)
-Current smoothing: pedestrian interpolation and compression
-q-score = avg 9mer (only guppy provided) if read aligned with a gap at that position
+Current smoothing: pedestrian interpolation and compression (fixed current reversing!)
+q-score = avg 9mer (only non-indel bases) if read aligned with a gap at that position
 Vector length needs to be divisible by 9 to evenly output all q-scores within a 9mer
 """
 
@@ -25,9 +25,6 @@ from random import shuffle
 from collections import Counter
 from multiprocessing import Pool
 
-
-# from numba import jit
-# from numba import float64, int64
 
 def split_nanopolish(file, n_split, temp_path, file_len=None):
     """
@@ -127,20 +124,21 @@ def get_ref_qscore(ref_base, read_base, qscore):
 
 def interpolate_signal(original_vector, target_scale):
     """
-        Pedestrian smoothing
+        Pedestrian smoothing devised by Eduardo Eyras
         """
     # get original vector length
     original_len = len(original_vector)
-
+    interp_op = original_len - 1
+    interp_target = target_scale - 1
     # get sliding window size
-    min_step_size = target_scale // original_len
+    min_step_size = interp_target // interp_op
 
     # get increased sliding window needed to capture remaining values
     max_step_size = min_step_size + 1
-    remainder = target_scale % original_len
+    remainder = interp_target % interp_op
 
     # get a list of all window sizes needed to compress to desired scale
-    window_values = [max_step_size] * remainder + [min_step_size] * (original_len - remainder)
+    window_values = [max_step_size] * remainder + [min_step_size] * (interp_op - remainder)
 
     shuffle(window_values)  # shuffle the list for randomly distributed smoothness
     index = 0
@@ -148,19 +146,22 @@ def interpolate_signal(original_vector, target_scale):
 
     for index, window_size in enumerate(window_values):  # get average for each window to compress original values
         low_value = original_vector[index]
-        up_value = original_vector[min(index + 1, len(original_vector) - 1)]
+        up_value = original_vector[index + 1]
         increment = (up_value - low_value) / (window_size)
         add = 0
         for _ in range(window_size):
             output_vector.append(low_value + add)
             add += increment
+    output_vector.append(original_vector[-1])
     return output_vector
 
 
 def smooth_event(original_vector, target_scale):
     """
-    Pedestrian smoothing
+    Pedestrian smoothing devised by Eduardo Eyras
     """
+
+    # original_vector.reverse()  # reverse to account for 3'->5' direction of nanopore
 
     if len(original_vector) < target_scale:
         new_event = interpolate_signal(original_vector, target_scale)
@@ -191,35 +192,12 @@ def smooth_event(original_vector, target_scale):
         return output_vector
 
 
-def get_array():
-    return np.zeros(195)
-
-
-# @jit(nopython=True)
-def build_array(one_dim_list, E1, E2, E3, E4, DW, QS):
-    # Ensure the input list has a length of at least 180
-    if len(one_dim_list) != 180:
-        raise ValueError("one_dim_list must have 180 elements.")
-
-    # Create the output array with shape (180, 7)
-    out = np.empty((180, 7))
-
-    # Populate the columns of the output array
-    out[:, 0] = one_dim_list
-    out[:, 1] = one_dim_list - E1
-    out[:, 2] = one_dim_list - E2
-    out[:, 3] = one_dim_list - E3
-    out[:, 4] = one_dim_list - E4
-    out[:, 5] = DW
-    out[:, 6] = QS
-    return out
-
-
 def get_4DDQ_list(smooth_event_2D, nine_mer, original_lengths, expected_dict, qscore_dict, start_pos, length=20):
     """
     outputs the vector used for the SWARM model 1
-    [[current, distances from 4 9mers, dwelling time, qscore(ref nucleotide)] x length x 5]
+    [[current, distances from 4 bases, dwelling time, qscore(ref nucleotide)] x length x 5]
     """
+
     reference_9mers = [nine_mer[:4] + nucleotide + nine_mer[5:] for nucleotide in NUCLEOTIDES]
     out_lst = []
     qscore_lst = []
@@ -242,17 +220,23 @@ def get_4DDQ_list(smooth_event_2D, nine_mer, original_lengths, expected_dict, qs
     if len(qscore_non_0) == 0:
         return None
     avg_q = sum(qscore_non_0) / len(qscore_non_0)
-    qscore_lst = np.repeat([y if y != 0 else avg_q for y in qscore_lst], length * 5 // 9)
-    dwelling_lst = np.repeat(np.array(original_lengths) - expected_dict[nine_mer][180:185], length)
+    qscore_lst = [y if y != 0 else avg_q for y in qscore_lst]
+    qscore_step = (5 * length) // 9  # calculate the number of reps for the same qscore to fit it into the vector size
 
-    smooth_event_1D = []
-    for sublist in smooth_event_2D:
-        smooth_event_1D += sublist
-    smooth_event_1D = np.array(smooth_event_1D)
 
-    D1, D2, D3, D4 = [expected_dict[ref][:180] for ref in reference_9mers]
+    for kmer_i in range(5):  # build the vector for the CNN input
+        kmer_signals = smooth_event_2D[kmer_i]
+        for current_index, current in enumerate(kmer_signals):
+            inner_lst = [current]
+            for ref_9mer in reference_9mers:
+                ref_5mer = ref_9mer[kmer_i:kmer_i + 5]
+                expected_signal, expected_std = expected_dict[ref_5mer]
+                inner_lst.append(expected_signal - current)
+            inner_lst.append(original_lengths[kmer_i])
+            inner_lst.append(qscore_lst[(kmer_i * length + current_index) // qscore_step])
+            out_lst.append(inner_lst)
 
-    return build_array(smooth_event_1D, D1, D2, D3, D4, dwelling_lst, qscore_lst)
+    return np.array([[round(y, 3) for y in x] for x in out_lst])
 
 
 def handle_ninemer(contig, pos, kmer_seq, read_id, sample_nested_lst,
@@ -279,9 +263,13 @@ def handle_ninemer(contig, pos, kmer_seq, read_id, sample_nested_lst,
                 start_9mer_pos,
                 length)
             if combined_vectors is not None:
+                if pos in qscore_dict:
+                    q_base = f"{qscore_dict[pos][0]}_{qscore_dict[pos][1]}"
+                else:
+                    q_base = "0_D"
                 with open(OUTPUT_file + ".pickle",
                           "ab") as out_file:  # output vectors (position of the start of the 9mer)
-                    cPickle.dump({"_".join([contig, str(start_9mer_pos), kmer_seq, read_id]): combined_vectors},
+                    cPickle.dump({"_".join([contig, str(start_9mer_pos), kmer_seq, read_id,q_base]): combined_vectors},
                                  out_file)
                 counter_dict[kmer_seq] += 1
     else:
@@ -299,8 +287,12 @@ def handle_ninemer(contig, pos, kmer_seq, read_id, sample_nested_lst,
         if combined_vectors is not None:
             # print("_".join([contig, str(start_9mer_pos), kmer_seq, read_id]))
             # print(combined_vectors)
+            if pos in qscore_dict:
+                    q_base = f"{qscore_dict[pos][0]}_{qscore_dict[pos][1]}"
+            else:
+                    q_base = "0_D"
             with open(outs_dict[kmer_seq[4]], "ab") as out_file:
-                cPickle.dump({"_".join([contig, str(start_9mer_pos), kmer_seq, read_id]): combined_vectors}, out_file)
+                cPickle.dump({"_".join([contig, str(start_9mer_pos), kmer_seq, read_id,q_base]): combined_vectors}, out_file)
             counter_dict[kmer_seq] += 1
     return combined_vectors
 
@@ -333,6 +325,18 @@ def parse_nanopolish(nanopolish_file):
     READ_INDEXED = pysam.IndexedReads(BAM_ALIGNMENT, multiple_iterators=True)
     READ_INDEXED.build()
 
+    TARGETS_DICT = {}
+    if ARGS.positions:
+        print("DOING positions")
+        with open(ARGS.positions) as pos_bed:
+            pos_bed.readline()
+            for line in pos_bed:
+                chr, pos = line.strip().split("\t")[:2]
+                TARGETS_DICT[f"{chr}_{pos}"] = 0
+
+
+
+
     # print("BAM INDEXED BY READS")
     with open(nanopolish_file) as nf:
         prev_pos = -9999
@@ -343,8 +347,8 @@ def parse_nanopolish(nanopolish_file):
         c = 0
         for line in nf:
             c += 1
-            # if c % 1000 == 0:
-            #     print(c, time.time() - start_time_np, flush=True)
+            if c % 1000 == 0:
+                print(c, time.time() - start_time_np, flush=True)
             lst = line.split("\t")
             contig, pos, kmer, read_name = lst[:4]
             pos = int(pos)
@@ -371,7 +375,7 @@ def parse_nanopolish(nanopolish_file):
                     continue
 
             if prev_pos != pos:  # if new kmer
-                if True:  # No checking if model kmer is reference
+                if True:  # if model kmer is reference
 
                     if pos != prev_pos + 1 or new_read:  # if the consecutive 5-mer chain is broken or new read
 
@@ -380,34 +384,41 @@ def parse_nanopolish(nanopolish_file):
                             sample_nested_lst.append(sample_lst)
 
                             if new_read:  #### execute vector operations  with previous read information
-                                combined_vector = handle_ninemer(prev_contig,
-                                                                 prev_pos,
-                                                                 current_seq,
-                                                                 prev_read,
-                                                                 sample_nested_lst,
-                                                                 MODEL_KMER_DICT,
-                                                                 counter_9mers,
-                                                                 prev_qscore_dict,
-                                                                 length=VECTOR_LEN,
-                                                                 nucleotide_mode=INPUT_BASE,
-                                                                 OUTPUT_file=OUTPUT_file,
-                                                                 outs_dict=outs_dict)
+
+                                if not TARGETS_DICT or f"{prev_contig}_{prev_pos}" in TARGETS_DICT:
+
+                                    combined_vector = handle_ninemer(prev_contig,
+                                                                     prev_pos,
+                                                                     current_seq,
+                                                                     prev_read,
+                                                                     sample_nested_lst,
+                                                                     MODEL_KMER_DICT,
+                                                                     counter_9mers,
+                                                                     prev_qscore_dict,
+                                                                     length=VECTOR_LEN,
+                                                                     nucleotide_mode=INPUT_BASE,
+                                                                     OUTPUT_file=OUTPUT_file,
+                                                                     outs_dict=outs_dict)
+                                    if combined_vector is not None and TARGETS_DICT:
+                                        TARGETS_DICT[f"{prev_contig}_{prev_pos}"]+=1
                                 # print(combined_vector, "new read", current_seq, sep="\n")
                             else:  #### execute vector operations  with current read information
 
-                                combined_vector = handle_ninemer(prev_contig,
-                                                                 prev_pos,
-                                                                 current_seq,
-                                                                 prev_read,
-                                                                 sample_nested_lst,
-                                                                 MODEL_KMER_DICT,
-                                                                 counter_9mers,
-                                                                 qscore_dict,
-                                                                 length=VECTOR_LEN,
-                                                                 nucleotide_mode=INPUT_BASE,
-                                                                 OUTPUT_file=OUTPUT_file,
-                                                                 outs_dict=outs_dict)
-
+                                if not TARGETS_DICT or f"{prev_contig}_{prev_pos}" in TARGETS_DICT:
+                                    combined_vector = handle_ninemer(prev_contig,
+                                                                     prev_pos,
+                                                                     current_seq,
+                                                                     prev_read,
+                                                                     sample_nested_lst,
+                                                                     MODEL_KMER_DICT,
+                                                                     counter_9mers,
+                                                                     qscore_dict,
+                                                                     length=VECTOR_LEN,
+                                                                     nucleotide_mode=INPUT_BASE,
+                                                                     OUTPUT_file=OUTPUT_file,
+                                                                     outs_dict=outs_dict)
+                                    if combined_vector is not None and TARGETS_DICT:
+                                        TARGETS_DICT[f"{prev_contig}_{prev_pos}"]+=1
                             # print(combined_vector, "broken chain", current_seq , sep = "\n")
 
                         #### reset 9-mer building as chain is broken
@@ -418,31 +429,48 @@ def parse_nanopolish(nanopolish_file):
                         current_seq = kmer
                         sample_nested_lst = []
 
-                        sample_lst = [float(i) for i in samples.split(",")]
+                        if NOISY:
+                            sample_lst = [float(i) + random.randint(-NOISE_LEVEL, NOISE_LEVEL) for i in
+                                          samples.split(",")]
+                        else:
+                            sample_lst = [float(i) for i in samples.split(",")]
+
                         sample_lst.reverse()
+
                     elif consecutive >= 5:
                         ### process the previously built 9-mer
                         sample_nested_lst.append(sample_lst)
                         #### execute vector operations
-                        combined_vector = handle_ninemer(prev_contig,
-                                                         prev_pos,
-                                                         current_seq,
-                                                         prev_read,
-                                                         sample_nested_lst,
-                                                         MODEL_KMER_DICT,
-                                                         counter_9mers,
-                                                         qscore_dict,
-                                                         length=VECTOR_LEN,
-                                                         nucleotide_mode=INPUT_BASE,
-                                                         OUTPUT_file=OUTPUT_file,
-                                                         outs_dict=outs_dict)
+
+                        if not TARGETS_DICT or f"{prev_contig}_{prev_pos}" in TARGETS_DICT:
+
+                            combined_vector = handle_ninemer(prev_contig,
+                                                             prev_pos,
+                                                             current_seq,
+                                                             prev_read,
+                                                             sample_nested_lst,
+                                                             MODEL_KMER_DICT,
+                                                             counter_9mers,
+                                                             qscore_dict,
+                                                             length=VECTOR_LEN,
+                                                             nucleotide_mode=INPUT_BASE,
+                                                             OUTPUT_file=OUTPUT_file,
+                                                             outs_dict=outs_dict)
+                            if combined_vector is not None and TARGETS_DICT:
+                                TARGETS_DICT[f"{prev_contig}_{prev_pos}"] += 1
+
                         # print(current_seq, "c is 5 new 9mer", "\n".join([str(x) for x in combined_vector]), prev_pos, sep="\n")
                         # sys.exit()
                         #### slide the 9-mer start
                         del sample_nested_lst[0]
                         current_seq = current_seq[1:] + kmer[4]
-                        sample_lst = [float(i) for i in samples.split(",")]
+                        if NOISY:
+                            sample_lst = [float(i) + random.randint(-NOISE_LEVEL, NOISE_LEVEL) for i in
+                                          samples.split(",")]
+                        else:
+                            sample_lst = [float(i) for i in samples.split(",")]
                         sample_lst.reverse()
+
                         prev_pos = pos
                         prev_read = read_name
                         prev_contig = contig
@@ -450,8 +478,11 @@ def parse_nanopolish(nanopolish_file):
 
                     else:  # if building 6-9mer and new kmer seen
                         sample_nested_lst.append(sample_lst)  ### append currents for previous vector
-
-                        sample_lst = [float(i) for i in samples.split(",")]
+                        if NOISY:
+                            sample_lst = [float(i) + random.randint(-NOISE_LEVEL, NOISE_LEVEL) for i in
+                                          samples.split(",")]
+                        else:
+                            sample_lst = [float(i) for i in samples.split(",")]
                         sample_lst.reverse()
                         prev_pos = pos
                         prev_read = read_name
@@ -460,32 +491,41 @@ def parse_nanopolish(nanopolish_file):
                         current_seq += kmer[4]
 
             elif True:  ### if another event for the already seen kmer position
-                samps = [float(i) for i in samples.split(",")]
-                samps.reverse()
-                sample_lst += samps
+                #    if consecutive >= 5 and current_seq[4] == "A":
+                #           count_dwell_error["{}_{}".format(contig,pos)] +=1
+                if NOISY:
+                    rev_lst = [float(i) + random.randint(-NOISE_LEVEL, NOISE_LEVEL) for i in samples.split(",")]
+                else:
+                    rev_lst = [float(i) for i in samples.split(",")]
+                rev_lst.reverse()
+                sample_lst += rev_lst
 
     if consecutive >= 5:  # process the last 9-mer if built
         sample_nested_lst.append(sample_lst)
 
         #### execute vector operations
-        combined_vector = handle_ninemer(prev_contig,
-                                         prev_pos,
-                                         current_seq,
-                                         prev_read,
-                                         sample_nested_lst,
-                                         MODEL_KMER_DICT,
-                                         counter_9mers,
-                                         qscore_dict,
-                                         length=VECTOR_LEN,
-                                         nucleotide_mode=INPUT_BASE,
-                                         OUTPUT_file=OUTPUT_file, outs_dict=outs_dict)
+        if not TARGETS_DICT or f"{prev_contig}_{prev_pos}" in TARGETS_DICT:
+            combined_vector = handle_ninemer(prev_contig,
+                                             prev_pos,
+                                             current_seq,
+                                             prev_read,
+                                             sample_nested_lst,
+                                             MODEL_KMER_DICT,
+                                             counter_9mers,
+                                             qscore_dict,
+                                             length=VECTOR_LEN,
+                                             nucleotide_mode=INPUT_BASE,
+                                             OUTPUT_file=OUTPUT_file, outs_dict=outs_dict)
+
+            if combined_vector is not None and TARGETS_DICT:
+                TARGETS_DICT[f"{prev_contig}_{prev_pos}"] += 1
         # print(combined_vector, "c is 5 last", current_seq, sep="\n")
 
     print("Nanopolish parsed in", (time.time() - start_time_np) / 60, "minutes", flush=True)
 
     print(nanopolish_file, "done", flush=True)
 
-    return counter_9mers
+    return (counter_9mers,TARGETS_DICT)
 
 
 if __name__ == "__main__":
@@ -516,6 +556,7 @@ if __name__ == "__main__":
                           metavar='\b',
                           required=True)
 
+
     REQUIRED.add_argument("-b", "--bam",
                           help="Alignment file in bam format",
                           metavar='\b',
@@ -540,6 +581,7 @@ if __name__ == "__main__":
                           type=int,
                           default=20
                           )
+
     OPTIONAL.add_argument("--input_base",
                           help="Input base as desired centre of the 9mers. Default is ALL4 to preprocess all 4 bases",
                           metavar='\b',
@@ -559,7 +601,18 @@ if __name__ == "__main__":
                           help="Output counts of all 9mers for each split nanopolish file",
                           action="store_true")
 
+    OPTIONAL.add_argument("--current_noise",
+                          help="Introduce noise to current",
+                          action="store_true")
 
+    OPTIONAL.add_argument("--noise_level",
+                          help="Level of noise",
+                          default=0,
+                          type=int)
+
+    OPTIONAL.add_argument("--positions",
+                          help="Target positions in .bed format (with column names)",
+                          default=None)
 
     parser._action_groups.append(OPTIONAL)
 
@@ -577,7 +630,8 @@ if __name__ == "__main__":
     FILE_LEN = ARGS.wc_l
     LIMIT_OUT = ARGS.limit_out
     OUT_COUNTER = ARGS.out_counter
-
+    NOISY = ARGS.current_noise
+    NOISE_LEVEL = ARGS.noise_level
 
     NUCLEOTIDES = ["A", "C", "G", "T"]
 
@@ -587,16 +641,19 @@ if __name__ == "__main__":
     if not os.path.exists(TEMP_PATH):
         os.mkdir(TEMP_PATH)
 
-    # model_kmer = pd.read_csv(MODEL_KMER_PATH, sep=',')
-    with open(MODEL_KMER_PATH, "rb") as p:
-        MODEL_KMER_DICT = cPickle.load(p)
+    model_kmer = pd.read_csv(MODEL_KMER_PATH, sep=',')
+    # MODEL_KMER_DICT = dict(zip(model_kmer['model_kmer'], model_kmer['model_mean']))
+    MODEL_KMER_DICT = model_kmer.set_index('model_kmer').apply(
+        lambda x: [x['model_mean'], x['model_stdv']], axis=1).to_dict()
 
     if LIMIT_OUT:
         if not LIMIT_OUT.isdigit():
             raise Exception(" --limit_out needs to be an integer")
 
     if VECTOR_LEN % 9 != 0:
-        raise Exception(" -l needs to be a multiple of 5 to fit qscores")
+        raise Exception(" -l needs to be a multiple of 9 to fit qscores")
+
+
 
     if CPU_NUMBER == 1:
         parse_nanopolish(NANOPOLISH_PATH)
@@ -606,7 +663,9 @@ if __name__ == "__main__":
         print(temp_files, CPU_NUMBER)
         p = Pool(CPU_NUMBER)
         time.sleep(1)
-        counters = p.map(parse_nanopolish, temp_files)
+        outs = p.map(parse_nanopolish, temp_files)
+        counters = [x[0] for x in outs]
+        targets = [x[1] for x in outs]
 
         if OUT_COUNTER:
             final_counter = Counter()
@@ -614,6 +673,20 @@ if __name__ == "__main__":
                 final_counter.update(counter)
             with open(PATH_OUT + ".counts", "w+") as out_counts:
                 out_counts.write("\n".join(["\t".join([str(x) for x in y]) for y in sorted(final_counter.items())]))
+
+
+        if ARGS.positions:
+            total_targets = Counter()
+            for counter in targets:
+                total_targets.update(counter)
+
+            with open(ARGS.positions) as in_bed:
+                with open(PATH_OUT + ".targets.bed","w+") as out_bed:
+                    out_bed.write(in_bed.readline().strip() + "\tsignals\n")
+                    for line in in_bed:
+                        chr,pos = line.strip().split("\t")[:2]
+                        out_bed.write(line.strip()  + "\t" +str(total_targets[f"{chr}_{pos}"]) + "\n")
+
         time.sleep(1)
         p.close()
 
