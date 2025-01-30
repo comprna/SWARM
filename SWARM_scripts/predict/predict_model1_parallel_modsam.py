@@ -81,6 +81,10 @@ OPTIONAL.add_argument("--batch_size",
                           default=4096,
                           required=False)
 
+OPTIONAL.add_argument("--arch",
+                          help="Model1 arch from Mini/Mid/Large. Mini is default",
+                          default="Mini",
+                          required=False)
 
 
 OPTIONAL.add_argument('-v', '--version',
@@ -105,6 +109,7 @@ LIMIT = ARGS.limit
 BATCH_SIZE = ARGS.batch_size
 SAM_PATH = ARGS.sam
 
+
 def read_signal(file):
     char_len = struct.unpack('i', file.read(4))[0]
     contigName = file.read(char_len).decode('utf-8')
@@ -116,11 +121,14 @@ def read_signal(file):
     char_len = struct.unpack('i', file.read(4))[0]
     readName = file.read(char_len).decode('utf-8')
     readPos = str(struct.unpack('i', file.read(4))[0])
-    key = [contigName,ninemerPos,ninemer,readName,readPos]
+    #key = "_".join([str(x) for x in [contigName,ninemerPos,ninemer,readName,readPos]])
+    qscore = str(struct.unpack('i', file.read(4))[0])
+    base=file.read(1).decode('utf-8')
+    key = [contigName,ninemerPos,ninemer,readName,readPos,qscore,base]
     #print(char_len, name)
     # Read the 2D double array (float values) from the file
     array_data = file.read(4 * 180 * 7)
-    return key, np.frombuffer(array_data, dtype=np.float32).reshape((1,180, 7))
+    return key, np.frombuffer(array_data, dtype=np.float32).reshape(180, 7)
 
 
 def get_MM_tag(MMs):
@@ -132,25 +140,29 @@ def get_MM_tag(MMs):
         point+= 1 + delta
     return MM + ";"
 
-
 def write_outputs(IDs, predictions, f_out, modsam_file, input_read_iterator, input_read, MMs, MLs ):
     input_read_name = input_read.query_name
 
     for index,prediction in enumerate(predictions):
         ID = IDs[index]
-        f_out.write(f"{'_'.join(ID)}\t{prediction[1]}\t{label}\n")
+        f_out.write(f"{'_'.join(ID)}\t{prediction[0]}\t{label}\n")
         try:
-            contigName, ninemerPos, ninemer, readName, readPos = ID
+            contigName,ninemerPos,ninemer,readName,readPos,qscore,base = ID
         except:
             print("Error splitting",ID)
             sys.exit()
         if readName == input_read_name:
 
             if int(readPos) != 0 or len(MMs) == 0:
-                MMs.append(readPos)
-                MLs.append(math.floor(prediction[1]*255))
+                try:
+                    col=math.floor(prediction[0]*255)
+                except Exception as e:
+                    print("skipped Nan probability")
+                else:
+                    MMs.append(readPos)
+                    MLs.append(col)
             # else:
-                # print(readPos, prediction[1])
+                # print(readPos, prediction[0])
         elif MMs:
             input_read.set_tag("MM",get_MM_tag(MMs),value_type="Z")
             input_read.set_tag("ML", MLs)
@@ -179,10 +191,33 @@ def write_outputs(IDs, predictions, f_out, modsam_file, input_read_iterator, inp
 
 
 # load the trainned model
-inputs = Input(shape=(1,int(vector_len)*5, number_of_features))
-output = readwise_prediction_network(inputs, number_of_labels)
-model = Model(inputs=inputs, outputs=output)
+#inputs = Input(shape=(1,int(vector_len)*5, number_of_features))
+#output = readwise_prediction_network(inputs, number_of_labels)
+#model = Model(inputs=inputs, outputs=output)
+#model.load_weights(DL_model)
+
+
+# load the trainned model
+inputs = Input(shape=(int(vector_len)*5, number_of_features))
+if ARGS.arch == "Large":
+            from network_2132024 import readwise_prediction_network
+            outputs = readwise_prediction_network(inputs, 1)
+
+elif ARGS.arch == "Mid":
+            from DL_models import build_Jasper
+            outputs = build_Jasper(inputs, Deep=True)
+
+elif ARGS.arch == "Mini":
+            from network_21122023 import build_jasper_model
+            outputs = build_jasper_model(inputs)
+else:
+            raise ("--arch  must be either Mini or Mid or Large")
+
+model = Model(inputs=inputs, outputs=outputs)
+
 model.load_weights(DL_model)
+
+
 
 if LIMIT == -1:
     LIMIT = float("inf")
