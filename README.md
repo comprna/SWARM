@@ -152,11 +152,11 @@ Example bash code to run SWARM read-level prediction:
 ```
 module load tensorflow
 
-export MOD=pU
+export MOD=m6A    # [<m6A> <m5C> <pU>]   
 export FASTA=Homo_sapiens.GRCh38.cdna.fa
 export BLOW5=Hek293_mRNA.blow5
 export SAM=Hek293_mRNA_f5C.events.sam
-export OUT=Hek293_mRNA_pU.m1.tsv
+export OUT=Hek293_mRNA.$MOD.m1.tsv
 
 python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT 
 ```
