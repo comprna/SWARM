@@ -21,6 +21,8 @@
 using namespace std;
 
 
+/// To fix: dependency on absolute path for using htslib
+
 
 struct kmerStruct {
     array<int, 2> eventIndex;
@@ -95,12 +97,55 @@ float* compresSignal(float* signals, int original_len, int target_len = 36){
 
 
 
-struct ModelArray {
-    float values[194];
-};
+// struct ModelArray {
+//     float values[194];
+// };
 
-unordered_map<string, ModelArray> readModelKmer(const char* filename) {
-    unordered_map<string, ModelArray> csvMap;
+
+// // TODO covenrt to 5mer model current
+
+// unordered_map<string, ModelArray> readModelKmer(const char* filename) {
+//     unordered_map<string, ModelArray> csvMap;
+
+//     ifstream inputFile(filename);
+//     if (!inputFile) {
+//         cerr << "Error opening file: " << filename << endl;
+//         return csvMap; // Return an empty map on error
+//     }
+//     string line;
+//     while (getline(inputFile, line)) {
+//         istringstream lineStream(line);
+//         string key;
+//         if (getline(lineStream, key, ',')) {
+//             ModelArray values_ar;
+//             for (int i = 0; i < 194; ++i) {
+//                 string value;
+//                 if (getline(lineStream, value, ',')) {
+//                     try {
+//                         float num_value = stof(value);
+//                         values_ar.values[i] = num_value;
+//                     } catch (const invalid_argument& e) {
+//                         // Handle conversion error if needed
+//                     }
+//                 } else {
+//                     cerr << "Not enough values in line: " << line << endl;
+//                     break;
+//                 }
+//             }
+//             // Use the first column as the key and the array as the value
+//             csvMap[key] = values_ar;
+//         } else {
+//             cerr << "Skipping invalid line: " << line << endl;
+//         }
+//     }
+
+//     inputFile.close();
+//     return csvMap;
+// }
+
+
+unordered_map<string, float> readModelKmer(const char* filename) {
+    unordered_map<string, float> csvMap;
 
     ifstream inputFile(filename);
     if (!inputFile) {
@@ -110,25 +155,17 @@ unordered_map<string, ModelArray> readModelKmer(const char* filename) {
     string line;
     while (getline(inputFile, line)) {
         istringstream lineStream(line);
-        string key;
-        if (getline(lineStream, key, ',')) {
-            ModelArray values_ar;
-            for (int i = 0; i < 194; ++i) {
-                string value;
-                if (getline(lineStream, value, ',')) {
-                    try {
-                        float num_value = stof(value);
-                        values_ar.values[i] = num_value;
-                    } catch (const invalid_argument& e) {
-                        // Handle conversion error if needed
-                    }
-                } else {
-                    cerr << "Not enough values in line: " << line << endl;
-                    break;
-                }
+        string key, value;
+        if (getline(lineStream, key, ',') && getline(lineStream, value, ',')) {
+            // Use the first column as the key and the second column as the value
+            try {
+                float num_value = stod(value);
+            csvMap[key] = num_value;
+            // cout << key << "  " << value << endl;
+            } catch (const std::invalid_argument& e){
+                // skip first line 
             }
-            // Use the first column as the key and the array as the value
-            csvMap[key] = values_ar;
+            
         } else {
             cerr << "Skipping invalid line: " << line << endl;
         }
@@ -137,6 +174,8 @@ unordered_map<string, ModelArray> readModelKmer(const char* filename) {
     inputFile.close();
     return csvMap;
 }
+
+
 
 std::string getDirectoryFromPath(const std::string& filePath) {
     size_t found = filePath.find_last_of("/"); // Platform-independent path separator
@@ -161,7 +200,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2)
     {
-        std::cout << "Run with mode: ./CHEUI preprocess <m6A/m5C>" << std::endl;
+        std::cout << "Run with: ./SWARM_preprocess  --sam <events.sam> --fasta <ref.fa> --raw <signals.blow5> -o <outpath> --base <A/C/G/T> -m <model_kmer_path>" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -291,7 +330,7 @@ int main(int argc, char *argv[]) {
     int c_parses = 0;
 
     // read kmer model map
-    unordered_map<string, ModelArray> kmer_map = readModelKmer(model_kmer_path);
+    unordered_map<string, float> kmer_map = readModelKmer(model_kmer_path);
     if (kmer_map.empty()){
         cerr << "Error loading kmer file." << endl;
         return 1;
@@ -306,7 +345,7 @@ int main(int argc, char *argv[]) {
         int contigNameLength = strlen(contigName);
 
 
-        
+        // cout << "HERE   " << contigName[0] << endl;
 
         // Check if the read is aligned
         if (!(samRecord->core.flag & BAM_FUNMAP)) {
@@ -613,47 +652,61 @@ int main(int argc, char *argv[]) {
                                     int readPosition = readpos_umap[refPos];
                                     outFile.write(reinterpret_cast<const char*>(&readPosition), sizeof(int));
 
-                                    array<ModelArray,4> comp_fivemers_curr;
+				    //Write qscore called in the read at target position. 0 if not called
+                                    int qscoreTarget = qscore_umap[refPos];
+                                    outFile.write(reinterpret_cast<const char*>(&qscoreTarget), sizeof(int));
+                                    //Write Base called in the read at target position
+                                    if (qscoreTarget != 0){
+                                            char targetBase = base_umap[refPos];
+                                            outFile.write(reinterpret_cast<const char*>(&targetBase), sizeof(char));
+                                    } else {
+                                            char targetBase = 'D';
+                                            outFile.write(reinterpret_cast<const char*>(&targetBase), sizeof(char));
+                                    }
                                     
-                                    int skip = 0;
-                                    for (int i=0; i<4; i++){
-                                        comp_fivemers_curr[i]= kmer_map[comp_ninemers[i]];
-                                        if (comp_fivemers_curr[i].values[0] == 0){skip=1;}
-                                    }
-                                    if (skip == 0){
-                                        int out_index = 0;
-                                        for (int kmer_i=0; kmer_i < 5; kmer_i++){
-                                            int dwell_i = kmer_i + 180;
-                                            int current_out_start = 36 * kmer_i;
-                                            for (int j =0; j<36; j++){
-                                                
-                                                int arr_row = current_out_start + j;
-                                                int qscore_index = arr_row / 20;
-                                                float current_val = ninemer[kmer_i].smoothCurrents[j];
-                                                outFile.write(reinterpret_cast<const char*>(&current_val), sizeof(float));
+                                    for (int kmer_i=0; kmer_i < 5; kmer_i++){
+                                        string fivemer_seq = ninemer_str.substr(kmer_i, 5);
+                                        array<float,4> comp_fivemers_curr;
 
-                                                float value = current_val - comp_fivemers_curr[0].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value =current_val - comp_fivemers_curr[1].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value = current_val - comp_fivemers_curr[2].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value = current_val - comp_fivemers_curr[3].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value = ninemer[kmer_i].dwell - comp_fivemers_curr[BASE_INDEX].values[dwell_i] ;
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
 
-                                                value = out_q[qscore_index] ;
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                out_index++;
-                                            
-                                            }
-                                        }   c_parses += 1;
+                                        for (int i=0; i<4; i++){
+                                            comp_fivemers_curr[i]= kmer_map[comp_ninemers[i].substr(kmer_i,5)];
+                                        //    if (comp_fivemers_curr[i] < 1){ cout << comp_ninemers[i] << " here " << ninemer_str << " " <<  ninemer_str.substr(5,10)  << endl; }
+                                        //    else {cout << "GOOD" << endl;}
+                                        }
+
+                                        int current_out_start = 36 * kmer_i;
+                                        for (int j =0; j<36; j++){
+
+                                            int arr_row = current_out_start + j;
+                                            int qscore_index = arr_row / 20;
+                                            float current_val = ninemer[kmer_i].smoothCurrents[j];
+                                            outFile.write(reinterpret_cast<const char*>(&current_val), sizeof(float));
+
+                                            float value = comp_fivemers_curr[0] - current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = comp_fivemers_curr[1]- current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = comp_fivemers_curr[2]- current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = comp_fivemers_curr[3]- current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = ninemer[kmer_i].dwell;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = out_q[qscore_index] ;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+
+                                        }
                                     }
+                                    c_parses += 1;
+
+                                    
                                 }
                             }
                             free(refBases);
@@ -758,6 +811,8 @@ int main(int argc, char *argv[]) {
                                     // Write the integer len(string) followed by string in little-endian byte order
                                     
                                     // Write contig
+            
+                                   
                                     outFile.write(reinterpret_cast<const char*>(&contigNameLength), sizeof(int));
                                     outFile.write(contigName,contigNameLength);
                                     
@@ -775,49 +830,61 @@ int main(int argc, char *argv[]) {
                                     //Write read position
                                     int readPosition = readpos_umap[refPos];
                                     outFile.write(reinterpret_cast<const char*>(&readPosition), sizeof(int));
-
-                                    array<ModelArray,4> comp_fivemers_curr;
-                                    int skip=0;
-                                    for (int i=0; i<4; i++){
-                                        comp_fivemers_curr[i]= kmer_map[comp_ninemers[i]];
-                                        if (comp_fivemers_curr[i].values[0] == 0){skip=1;}
+				    
+				    //Write qscore called in the read at target position. 0 if not called
+                                    int qscoreTarget = qscore_umap[refPos];
+                                    outFile.write(reinterpret_cast<const char*>(&qscoreTarget), sizeof(int));
+                                    //Write Base called in the read at target position
+                                    if (qscoreTarget != 0){
+                                            char targetBase = base_umap[refPos];
+                                            outFile.write(reinterpret_cast<const char*>(&targetBase), sizeof(char));
+                                    } else {
+                                            char targetBase = 'D';
+                                            outFile.write(reinterpret_cast<const char*>(&targetBase), sizeof(char));
                                     }
-                                    if (skip == 0){
 
-                                        int out_index = 0;
-                                        for (int kmer_i=0; kmer_i < 5; kmer_i++){
-                                            int kmer_arr_i = (kmer_i + kmer_sliding_start) % 5;
-                                            int dwell_i = kmer_i + 180;
-                                            int current_out_start = 36 * kmer_i;
-                                            for (int j =0; j<36; j++){
-                                
-                                                int arr_row = current_out_start + j;
-                                                int qscore_index = arr_row / 20;
-                                                float current_val = ninemer[kmer_arr_i].smoothCurrents[j];
-                                                outFile.write(reinterpret_cast<const char*>(&current_val), sizeof(float));
+                                    for (int kmer_i=0; kmer_i < 5; kmer_i++){
+                                        int kmer_arr_i = (kmer_i + kmer_sliding_start) % 5;
+                                        string fivemer_seq = ninemer_str.substr(kmer_i, 5);
+                                        array<float,4> comp_fivemers_curr;
 
-                                                float value = current_val - comp_fivemers_curr[0].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value =current_val - comp_fivemers_curr[1].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value = current_val - comp_fivemers_curr[2].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value = current_val - comp_fivemers_curr[3].values[out_index];
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                
-                                                value = ninemer[kmer_arr_i].dwell - comp_fivemers_curr[BASE_INDEX].values[dwell_i] ;
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float)); 
-                                                
-                                                value = out_q[qscore_index] ;
-                                                outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
-                                                out_index++;
-                                            
-                                            }
-                                        } c_parses += 1;
+
+                                        for (int i=0; i<4; i++){
+
+                                            comp_fivemers_curr[i]= kmer_map[comp_ninemers[i].substr(kmer_i,5)];
+
+                                        }
+                                        int current_out_start = 36 * kmer_i;
+                                        for (int j =0; j<36; j++){
+
+                                            int arr_row = current_out_start + j;
+                                            int qscore_index = arr_row / 20;
+                                            float current_val = ninemer[kmer_arr_i].smoothCurrents[j];
+                                            outFile.write(reinterpret_cast<const char*>(&current_val), sizeof(float));
+
+                                            float value = comp_fivemers_curr[0] - current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = comp_fivemers_curr[1] - current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = comp_fivemers_curr[2] - current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = comp_fivemers_curr[3] - current_val;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = ninemer[kmer_arr_i].dwell;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                            value = out_q[qscore_index] ;
+                                            outFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+
+                                        }
                                     }
+                                    c_parses += 1;
+
+                                    
                                 }
                             }    
                             // } else { cout << "SKIP 0 Q" << endl;}
@@ -907,10 +974,10 @@ int main(int argc, char *argv[]) {
             }
 
             // Parse only 10k reads during testing
-           //if (c_reads > 29999) {
-           //    cout << c_reads << " reads and " << c_parses << " bases parsed" << endl;
-           //    break;
-           // }
+            // if (c_reads > 0) {
+            //    cout << c_reads << " reads and " << c_parses << " bases parsed" << endl;
+            //    break;
+            // }
         
         }
     }
