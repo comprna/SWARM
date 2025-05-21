@@ -34,10 +34,10 @@ mod_dct = {
 arch_dct = {
     "pU_RNA002": "Mini",
     "pU_RNA004": "Mini",
-    "m5C_RNA002": "Mini",
+    "m5C_RNA002": "Mid",
     "m5C_RNA004": "Mini",
-    "m6A_RNA002": "Mid",
-    "m6A_RNA004": "Mid"
+    "m6A_RNA002": "Large",
+    "m6A_RNA004": "Large"
 }
 
 def run_script(cmd,error_event):
