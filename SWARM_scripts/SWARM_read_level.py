@@ -13,9 +13,7 @@ import multiprocessing
 MODELS_PATH = "../SWARM_models/"
 SCRIPTS_PATH = "../SWARM_scripts/"
 
-MODEL_KMER_cpp = MODELS_PATH + "kmer_model/model_5-mer.csv"
-MODEL_KMER_py = MODELS_PATH + "kmer_model/model_5-mer.csv"
-
+MODEL_KMER = MODELS_PATH + "kmer_model/model_5-mer"
 PREPROCESS_CPP = SCRIPTS_PATH + "preprocess/SWARM_preprocess"
 PREPROCESS_py = SCRIPTS_PATH + "preprocess/SWARM_preprocess.py"
 split_script = SCRIPTS_PATH + "preprocess/split_bams.py"
@@ -257,7 +255,7 @@ def main():
             if args.kmer:
                 model_kmer_path = args.kmer
             else:
-                model_kmer_path=os.path.join(script_dir,MODEL_KMER_cpp)
+                model_kmer_path=os.path.join(script_dir,f"{MODEL_KMER}.{KIT}.csv")
 
             if args.cpp:
                 cpp_bin = args.cpp
@@ -362,7 +360,7 @@ def main():
             args_script_py = ["python3", os.path.join(script_dir,PREPROCESS_py),
                               "-i", args.nanopolish,
                               "-o", args.out,
-                              "-m", os.path.join(script_dir,MODEL_KMER_py),
+                              "-m", os.path.join(script_dir,f"{MODEL_KMER}.{KIT}.csv"),
                               "-b", args.bam,
                               "-n", args.threads]
             if args.base:
