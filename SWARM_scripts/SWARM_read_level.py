@@ -38,6 +38,15 @@ arch_dct = {
     "m6A_RNA004": "Large"
 }
 
+label_dct = {
+    "pU_RNA002": "1",
+    "pU_RNA004": "2",
+    "m5C_RNA002": "3",
+    "m5C_RNA004": "4",
+    "m6A_RNA002": "5",
+    "m6A_RNA004": "6"
+}
+
 def run_script(cmd,error_event):
     try:
         print("starting process with command",cmd)
@@ -146,8 +155,6 @@ def main():
     parser.add_argument("-o", "--out", required=True, help="\nPrefix to the output file. Outputs <prefix>.pred.tsv\n")
 
     parser.add_argument("--mode", required=False, default="parallel", help="\nparallel / preprocess / predict \n")
-    parser.add_argument("-l", "--label", required=False, default="1", help="\nLabel for condition such as WT_rep1 \n")
-
     parser.add_argument("-s", "--sam", required=False, help="\nPath to the input sam event align\n")
     parser.add_argument("-f", "--fasta", required=False, help="\nPath to the input fasta reference genome\n")
     parser.add_argument("-r", "--raw", required=False, help="\nPath to the input signals in blow5 format\n")
@@ -236,7 +243,7 @@ def main():
                               "-m", MODEL1_PATH,
                               "--sam", args.sam,
                               "--arch", ARCH,
-                              "-l", args.label]
+                              "-l", label_dct[f"{RNAmod}_{KIT}"]]
 
             else: # run prediction script which makes just regular tsv output
                 SCRIPT_py = os.path.join(script_dir,regPredict)
@@ -245,7 +252,7 @@ def main():
                               "-i", TEMP,
                               "-o", args.out,
                               "-m", MODEL1_PATH,
-                              "-l", args.label,
+                              "-l", label_dct[f"{RNAmod}_{KIT}"],
                               "--arch", ARCH,
                               "--nworkers", str(args.nworkers),
                               "--limit",str(args.limit)]
@@ -383,7 +390,7 @@ def main():
                               "-i", args.pickle,
                               "-o", args.out,
                               "-m", MODEL1_PATH,
-                              "-l",args.label]
+                              "-l", "0"]
 
             subprocess.run(args_script_py)
     else:
