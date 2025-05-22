@@ -250,7 +250,7 @@ def main():
                 print("running regular prediction")
                 args_script_py = ["python3",os.path.join(script_dir,SCRIPT_py),
                               "-i", TEMP,
-                              "-o", args.out,
+                              "-o", args.out + ".pred.tsv",
                               "-m", MODEL1_PATH,
                               "-l", label_dct[f"{RNAmod}_{KIT}"],
                               "--arch", ARCH,
