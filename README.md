@@ -20,6 +20,7 @@ Detection of pseudouridine, m6A, m5C, and ac4C on individual molecules from dire
      * [Installation](#installation)
      * [Read-level single-base detection](#read-level-single-base-detection)
      * [Site-level detection](#site-level-detection)
+     * [modsam output](#modsam-output)
    * [Train new models](#train-new-models)
 
 ------------------------------------------
@@ -188,6 +189,43 @@ python3 SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -o $OUT
 
 
 ## Site-level detection
+
+First sort the model1 output, use cat if pooling multiple replicates.
+
+```
+cat Hek293_mRNA_rep1_pU.pred.tsv Hek293_mRNA_rep2_pU.pred.tsv > Hek293_mRNA_pooled_pU.pred.tsv
+sort -k 1 Hek293_mRNA_pooled_pU.pred.tsv > Hek293_mRNA_pooled_pU.pred.tsv.sorted
+```
+
+Run site-level detection on sorted read-level data: 
+
+```
+INPUT=Hek293_mRNA_pooled_pU.pred.tsv.sorted
+OUT=Hek293_mRNA_pooled_pU.m2.pred.tsv
+python3 SWARM_site_level.py -i $INPUT -o $OUT 
+```
+
+## modsam output
+Use --sam tag with SWARM_read_level.py to get mod.sam output (pred.tsv is still produced too).
+
+Note that this runs slower as multithreaded preprocessing is not implemented with modsam.
+
+```
+python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT --sam
+```
+
+mod.sam can also be generated from sorted read-level pred.tsv files.
+
+This should be faster and also enables filtering of sites for cleaner results. 
+
+```
+M1_sorted=Hek293_mRNA_pooled_pU.pred.tsv.sorted
+SAM=Hek293_mRNA_f5C.events.sam
+M2=Hek293_mRNA_pooled_pU.m2.pred.tsv
+OUT=Hek293_mRNA_pooled_pU.m2.pred.tsv
+python3 SWARM_make_modsam.py -i $M1_sorted -s $SAM -m $M2 -o $OUT
+```
+
 
 ------------------------------------------
 # Train new models
