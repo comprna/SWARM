@@ -110,8 +110,10 @@ nanopolish eventalign -t 48 --reads $fastq --bam $bam_file \
 ------------------------------------------
 
 ## Installation
-Simply clone from github:
+Simply clone from github (install lfs to download large h5 files)
+
 ```
+git lfs install
 git clone https://github.com/comprna/SWARM/ && cd SWARM
 ```
 
