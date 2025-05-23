@@ -26,11 +26,18 @@ Detection of pseudouridine, m6A, m5C, and ac4C on individual molecules from dire
 ------------------------------------------
 # Dependencies
 ------------------------------------------
+
+SWARM supports GPU inference with tensorflow 2.15.0; cuda/12.2.2 ; cudnn/8.9.7-cuda12
+
+python requirements:
+
 ```
-python=3.9
-numpy==1.19.2
-tensorflow-gpu==2.4.1
-keras-preprocessing==1.1.2
+python=3.11.7
+tensorflow==2.15.0
+numpy==1.26.2
+pandas==2.2.0
+sklearn==1.4.0
+pysam==0.22.1
 ```
 
 
