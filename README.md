@@ -9,7 +9,6 @@ Detection of pseudouridine, m6A, m5C, and ac4C on individual molecules from dire
 # Table of Contents
 ------------------------------------------
 
-   * [Dependencies](#dependencies)
    * [Preprocess raw signals](#preprocess-raw-signals)
      * [Basecalling](#basecalling)
      *   [Alignment](#alignment)
@@ -22,24 +21,6 @@ Detection of pseudouridine, m6A, m5C, and ac4C on individual molecules from dire
      * [Site-level detection](#site-level-detection)
      * [modsam output](#modsam-output)
    * [Train new models](#train-new-models)
-
-------------------------------------------
-# Dependencies
-------------------------------------------
-
-SWARM supports GPU inference with tensorflow 2.15.0; cuda/12.2.2 ; cudnn/8.9.7-cuda12
-
-python requirements:
-
-```
-python=3.11.7
-tensorflow==2.15.0
-numpy==1.26.2
-pandas==2.2.0
-sklearn==1.4.0
-pysam==0.22.1
-```
-
 
 ------------------------------------------
 # Preprocess raw signals
@@ -144,14 +125,31 @@ bash build.sh
 
 ```
 
+### Dependencies
+SWARM supports GPU inference with tensorflow, tested with versions 2.8.0 and 2.15.0
+
+GPU-configured tensorflow should be available on most HPC systems.
+Otherwise, you can install tensorflow configured for GPU as per https://www.tensorflow.org/install/
+
+python requirements:
+```
+python=3.11.7
+tensorflow==2.15.0
+numpy==1.26.2
+pandas==2.2.0
+sklearn==1.4.0
+pysam==0.22.1
+```
+
+
+
+
+
 ## Read-level single-base detection
 
 ### sam + slow5 preprocessing (preferred)
 
 Use this approach for faster and simultaneous preprocessing + model inference. Run build.sh from above section.
-
-Tensorflow (GPU-configured) should be available on most HPC systems with GPU access. 
-Otherwise, it is highly advised to use tensorflow configured for GPU. https://www.tensorflow.org/install/
 
 Models for RNA002 or RNA004 chemistry are automatically selected based on the blow5 data. 
 
