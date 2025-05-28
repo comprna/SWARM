@@ -1,10 +1,6 @@
 # SWARM: Single-molecule Workflow for Analysing RNA Modifications 
 Detection of pseudouridine, m6A, and m5C on individual molecules from direct RNA nanopore signals
 
-
-## About
-
-
 ------------------------------------------
 # Table of Contents
 ------------------------------------------
