@@ -27,11 +27,17 @@ Detection of pseudouridine, m6A, and m5C on individual molecules from direct RNA
 ------------------------------------------
 
 ## Basecalling
-SWARM was trained on signals basecalled with guppy 6.4.6 
+SWARM was trained on signals basecalled with guppy 6.4.6 for RNA002 and with dorado 0.7.2 for RNA004.
 
-Recommended parameters:
+Recommended parameters RNA002:
 ```
-guppy_basecaller -i $INPUTDIR --recursive -s $output_path -c guppy/ont-guppy/data/rna_r9.4.1_70bps_hac.cfg --device cuda:all:100% --compress_fastq --gpu_runners_per_device 2
+guppy_basecaller -i $INPUTDIR --recursive -s $output_path.fastq -c guppy/ont-guppy/data/rna_r9.4.1_70bps_hac.cfg --device cuda:all:100%
+```
+
+Recommended parameters RNA004:
+```
+MODEL=dorado-0.7.2-linux-x64/rna004_130bps_sup@v5.0.0
+dorado basecaller $MODEL $INPUTDIR -r -x cuda:all --emit-fastq > $output_path.fastq
 ```
 
 
