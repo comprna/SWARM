@@ -21,8 +21,7 @@ REQUIRED.add_argument("-o", "--file_out",
 
 REQUIRED.add_argument("-m", "--DL_model",
                       help="path to pretrainned DL model 2",
-                      metavar='\b',
-                      required=True)
+                      default=None)
 
 REQUIRED.add_argument("-c", "--cutoff",
                       help="model 2 probability cutoff for printing sites",
@@ -78,6 +77,7 @@ import tensorflow as tf
 import _pickle as cPickle
 from tensorflow.keras import Input
 from tensorflow.keras.models import Model
+from predict.network_21122023 import build_jasper_model
 
 random.seed(42)
 BOOTSTRAP_NUM = 21
@@ -91,6 +91,15 @@ label_dct = {
     "4":"m5C_RNA004",
     "5" :"m6A_RNA002",
     "6" :"m6A_RNA004"
+}
+
+arch_dct = {
+    "pU_RNA002": "Mini",
+    "pU_RNA004": "Mini",
+    "m5C_RNA002": "Mid",
+    "m5C_RNA004": "Mini",
+    "m6A_RNA002": "Large",
+    "m6A_RNA004": "Large"
 }
 
 MODELS_PATH = "../SWARM_models/"
@@ -179,25 +188,21 @@ def get_pMod_SWARM(pmod):
 def get_pMod_CHEUI(pmod):
     return pmod[0]
 
-inputs = Input(shape=(100, 1))
+#inputs = Input(shape=(100, 1))
+#if ARGS.arch == "Large":
+#            from predict.network_2132024 import readwise_prediction_network
+#            outputs = readwise_prediction_network(inputs, 1)
 
+#elif ARGS.arch == "Mid":
+#            from predict.DL_models import build_Jasper
+#            outputs = build_Jasper(inputs, Deep=True)
 
-
-if ARGS.arch == "Large":
-            from network_2132024 import readwise_prediction_network
-            outputs = readwise_prediction_network(inputs, 1)
-
-elif ARGS.arch == "Mid":
-            from DL_models import build_Jasper
-            outputs = build_Jasper(inputs, Deep=True)
-
-elif ARGS.arch == "Mini":
-            from network_21122023 import build_jasper_model
-            outputs = build_jasper_model(inputs)
-else:
-            raise ("--arch  must be either Mini or Mid or Large")
-
-model = Model(inputs=inputs, outputs=outputs)
+#elif ARGS.arch == "Mini":
+#            from predict.network_21122023 import build_jasper_model
+#            outputs = build_jasper_model(inputs)
+#else:
+#            raise ("--arch  must be either Mini or Mid or Large")
+#model = Model(inputs=inputs, outputs=outputs)
 
 if ARGS.percentile:
     convert_p_to_vector = convert_p_to_vector_Percentile(ARGS.percentile)
@@ -236,6 +241,9 @@ with open(file_out_path, 'w') as file_out:
                     script_dir = os.path.dirname(os.path.abspath(__file__))
                     RNAmod,KIT = model_name.split("_")
                     model2_path = os.path.join(script_dir,MODELS_PATH + f"Model2/{KIT}/{RNAmod}/Model_100_epoch_relu.h5")
+                    inputs = Input(shape=(100, 1))
+                    outputs = build_jasper_model(inputs)
+                    model = Model(inputs=inputs, outputs=outputs)
                     model.load_weights(model2_path)
             else:
                 if line[-1] != model_key:
