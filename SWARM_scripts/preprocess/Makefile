@@ -9,16 +9,16 @@ LDFLAGS=-L./htslib-1.19/ -L./slow5lib/lib/  -Wl,-R${PWD}/htslib-1.19/ -Wl,-R${PW
 all: $(EXEC)
 
 check_RNA_kit: check_RNA_kit.cpp
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) -g $<
+	$(CC) -o $@ $(CFLAGS) -g $< $(LDFLAGS)
 
 SWARM_preprocess: SWARM_preprocess.cpp
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) -g $<
+	$(CC) -o $@ $(CFLAGS) -g $< $(LDFLAGS)
 
 SWARM_preprocess_targets: SWARM_preprocess_targets.cpp
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) -g $<
+	$(CC) -o $@ $(CFLAGS) -g $< $(LDFLAGS)
 
 SWARM_preprocess_target_9mers: SWARM_preprocess_target_9mers.cpp
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) -g $<
+	$(CC) -o $@ $(CFLAGS) -g $< $(LDFLAGS)
 
 clean: 
 	rm -f *.o
