@@ -15,7 +15,7 @@ Detection of pseudouridine, m6A, and m5C on individual molecules from direct RNA
      * [Installation](#installation)
      * [Read-level single-base detection](#read-level-single-base-detection)
      * [Site-level detection](#site-level-detection)
-     * [Differential modification test](#diff-test)
+     * [Differential modification test](#differential-modification-test)
      * [modsam output](#modsam-output)
    * [Train new models](#train-new-models)
 
