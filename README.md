@@ -15,6 +15,7 @@ Detection of pseudouridine, m6A, and m5C on individual molecules from direct RNA
      * [Installation](#installation)
      * [Read-level single-base detection](#read-level-single-base-detection)
      * [Site-level detection](#site-level-detection)
+     * [Differential modification test](#diff-test)
      * [modsam output](#modsam-output)
    * [Train new models](#train-new-models)
 
@@ -212,6 +213,25 @@ Run site-level detection on sorted read-level data:
 INPUT=Hek293_mRNA_pooled_pU.pred.tsv.sorted
 OUT=Hek293_mRNA_pooled_pU.m2.pred.tsv
 python3 SWARM_site_level.py -i $INPUT -o $OUT 
+```
+
+## Differential modification test
+
+Run differential modification test to find reference coordinates with stoichiometry changes across different conditions. Handles multiple replicates.
+
+Set up a **tab-separated config** file with paths to inputs. Make sure that the header is present. 
+```
+M2_file_path  RepName  Condition
+WT_rep1.m2.pred.tsv  1  WT
+WT_rep2.m2.pred.tsv  2  WT
+KD_rep1.m2.pred.tsv  1  KD
+KD_rep2.m2.pred.tsv  2  KD
+```
+
+Run SWARM_diff on site-level predictions (12 threads): 
+
+```
+python3 SWARM_diff.py --data_file diff_config.tsv --output_file diff_out.tsv -n 12 
 ```
 
 ## modsam output
