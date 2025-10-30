@@ -217,10 +217,10 @@ if __name__ == "__main__":
     parser.add_argument('--data_file',
                         help='tab-separated text files with first column M2_file_path, second column RepName, third column Condition')
     parser.add_argument('--output_file', help='Output table.')
-    parser.add_argument('-s', '--M2_threshold', type=float, default=0,
-                        help='Compare only sites with at least one sample modified with site-probability more than s. Default =0')
-    parser.add_argument('-p', '--Stoichiometry_threshold', type=float, default=0,
-            help='Compare only sites with at least one sample modified with stoichiometry more than p. Default =0')
+    parser.add_argument('-p', '--M2_threshold', type=float, default=0,
+                        help='Compare only sites with at least one sample modified with site-probability more than p. Default =0')
+    parser.add_argument('-s', '--Stoich_threshold', type=float, default=0,
+            help='Compare only sites with at least one sample modified with stoichiometry more than s. Default =0')
     parser.add_argument('-delta', '--Delta_threshold', type=float, default=0,
                         help='Adjust only for sites with at least two conditions with stoichiometry difference greater than delta. Default =0.0')
     parser.add_argument('--ncpus', '-n', help='Number of CPU threads', type=int, default=1)
