@@ -279,7 +279,7 @@ with open(file_out_path, 'w') as file_out:
                     coverage = len(predictions_site)
                     ID_colums = ['_'.join(prev_ID.split('_')[:-2])] + prev_ID.split('_')[-2:]
 
-                    if coverage > 150 and stoichiometry > 0.1:
+                    if coverage > 150 and str(stoichiometry) != 'None' and stoichiometry > 0.1:
                         # handle predictions on larger coverages (bootstrap)
 
                         probs_100_lst.extend(biggerThan100(predictions_site))
