@@ -236,6 +236,7 @@ def main():
             if args.modsam: # run prediction script which makes regular+modsam output
                 SCRIPT_py = os.path.join(script_dir,modsamPredict)
                 print("running modsam prediction")
+                args.nworkers = 1
 
                 args_script_py = ["python3",os.path.join(script_dir,SCRIPT_py),
                               "-i", TEMP,
