@@ -1,0 +1,24 @@
+site_name: SWARM
+site_url: https://sitename.example
+theme:
+  name: readthedocs
+  highlightjs: true
+  hljs_style: github
+  font:
+    text: Merriweather Sans
+    code: Red Hat Mono
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Preprocessing raw data: preprocessing.md
+  - Read-level detection: read_level.md
+  - Site-level detection: site_level.md
+  - Modification visualization: modbam.md
+  - Differential modification analysis: diff_test.md
+markdown_extensions:
+  - fenced_code
+  - codehilite:
+      guess_lang: false
+      linenums: false
+  - attr_list
+  - pymdownx.superfences
