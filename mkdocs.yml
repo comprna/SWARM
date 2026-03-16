@@ -1,5 +1,9 @@
-site_name: SWARM
-site_url: https://sitename.example
+site_name: SWARM Documentation
+site_url: https://comprna.github.io/SWARM/
+repo_url: https://github.com/comprna/SWARM
+repo_name: comprna/SWARM
+docs_dir: docs
+site_dir: site
 theme:
   name: readthedocs
   highlightjs: true
