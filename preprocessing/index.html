@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://comprna.github.io/SWARM/preprocessing/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Preprocessing raw data - SWARM Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Preprocessing raw data";
+        var mkdocs_page_input_path = "preprocessing.md";
+        var mkdocs_page_url = "/SWARM/preprocessing/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> SWARM Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Preprocessing raw data</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#basecalling">Basecalling</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#alignment">Alignment</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast5-to-slow5">fast5 to slow5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#event-alignment">Event alignment</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#f5c">f5c</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#nanopolish">nanopolish</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../read_level/">Read-level detection</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../site_level/">Site-level detection</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../modbam/">Modification visualization</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../diff_test/">Differential modification analysis</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">SWARM Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Preprocessing raw data</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/comprna/SWARM/edit/master/docs/preprocessing.md">Edit on comprna/SWARM</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="preprocessing-raw-data">Preprocessing raw data</h1>
+<h2 id="basecalling">Basecalling</h2>
+<p>SWARM was trained and tested with following basecaller versions and models, use the same versions for results comparable to our benchmarks:</p>
+<table>
+<thead>
+<tr>
+<th>sequencing kit</th>
+<th>basecaller version</th>
+<th>basecaller model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sqk-RNA002</td>
+<td>guppy 6.4.6</td>
+<td>rna_r9.4.1_70bps_hac</td>
+</tr>
+<tr>
+<td>sqk-RNA004</td>
+<td>dorado 0.7.2</td>
+<td>rna004_130bps_sup@v5.0.0</td>
+</tr>
+</tbody>
+</table>
+<p>Recommended parameters RNA002:
+<div class="highlight"><pre><span></span><code>guppy_basecaller<span class="w"> </span>-i<span class="w"> </span><span class="nv">$INPUTDIR</span><span class="w"> </span>--recursive<span class="w"> </span>-s<span class="w"> </span><span class="nv">$output_path</span>.fastq<span class="w"> </span>-c<span class="w"> </span>guppy/ont-guppy/data/rna_r9.4.1_70bps_hac.cfg<span class="w"> </span>--device<span class="w"> </span>cuda:all:100%
+</code></pre></div></p>
+<p>Recommended parameters RNA004:
+<div class="highlight"><pre><span></span><code><span class="nv">MODEL</span><span class="o">=</span>dorado-0.7.2-linux-x64/rna004_130bps_sup@v5.0.0
+dorado<span class="w"> </span>basecaller<span class="w"> </span><span class="nv">$MODEL</span><span class="w"> </span><span class="nv">$INPUTDIR</span><span class="w"> </span>-r<span class="w"> </span>-x<span class="w"> </span>cuda:all<span class="w"> </span>--emit-fastq<span class="w"> </span>&gt;<span class="w"> </span><span class="nv">$output_path</span>.fastq
+</code></pre></div></p>
+<h2 id="alignment">Alignment</h2>
+<p>minimap 2.24 for alignment and samtools 1.22 for quality control</p>
+<p>Recommended parameters:
+-k 5 for sythetic IVTs and -k 14 for human transcriptomes </p>
+<p>Example transcriptome alignment:</p>
+<div class="highlight"><pre><span></span><code>minimap2<span class="w"> </span>-ax<span class="w"> </span>map-ont<span class="w"> </span>-k<span class="w"> </span><span class="m">14</span><span class="w"> </span><span class="si">${</span><span class="nv">fasta</span><span class="si">}</span><span class="w"> </span><span class="si">${</span><span class="nv">input_path</span><span class="si">}</span>/guppy_pass.fastq<span class="w"> </span><span class="p">|</span><span class="w"> </span>samtools<span class="w"> </span>sort<span class="w"> </span>-o<span class="w"> </span><span class="si">${</span><span class="nv">output_path</span><span class="si">}</span>.bam
+samtools<span class="w"> </span>index<span class="w"> </span><span class="si">${</span><span class="nv">output_path</span><span class="si">}</span>.bam
+
+samtools<span class="w"> </span>view<span class="w"> </span>-b<span class="w"> </span>-F<span class="w"> </span><span class="m">2324</span><span class="w">  </span><span class="si">${</span><span class="nv">bam_file</span><span class="si">}</span>.bam<span class="w"> </span>&gt;<span class="w"> </span><span class="si">${</span><span class="nv">bam_file</span><span class="si">}</span>_pass_filtered.bam
+samtools<span class="w"> </span>index<span class="w"> </span><span class="si">${</span><span class="nv">bam_file</span><span class="si">}</span>_pass_filtered.bam
+</code></pre></div>
+<h2 id="fast5-to-slow5">fast5 to slow5</h2>
+<p>This step is highly recommended, especially for large datasets.</p>
+<p>Install slow5tools from:  https://github.com/hasindu2008/slow5tools</p>
+<p>Example conversion command:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#convert fast5 files to slow5 files using 8 I/O processes</span>
+slow5tools<span class="w"> </span>f2s<span class="w"> </span><span class="nv">$INPUT_DIR</span><span class="w"> </span>-d<span class="w"> </span><span class="nv">$TEMPDIR</span><span class="w">  </span>-p<span class="w"> </span><span class="m">8</span>
+
+<span class="c1">#Merge all the slow5 files in to a single file using 8 threads</span>
+slow5tools<span class="w"> </span>merge<span class="w"> </span><span class="nv">$TEMPDIR</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$OUTDIR</span>/<span class="si">${</span><span class="nv">SAMPLE</span><span class="si">}</span>.blow5<span class="w"> </span>-t<span class="w"> </span><span class="m">8</span>
+
+<span class="c1">#remove the temporary directory</span>
+rm<span class="w"> </span>-rf<span class="w">  </span><span class="nv">$TEMPDIR</span>
+</code></pre></div>
+<h2 id="event-alignment">Event alignment</h2>
+<h3 id="f5c">f5c</h3>
+<p>Our workflow supports both f5c .sam and nanopolish .tsv formats.
+We highly recommend opting for <strong>f5c</strong> and <strong>sam</strong> files.
+This requires the slow5 conversion outlined in previous step.</p>
+<p>f5c is available from:  https://github.com/hasindu2008/f5c</p>
+<p>Example event align command:</p>
+<div class="highlight"><pre><span></span><code>f5c<span class="w"> </span>index<span class="w"> </span>-t<span class="w"> </span><span class="m">48</span><span class="w"> </span><span class="nv">$FASTQ_PATH</span><span class="w"> </span>--slow5<span class="w"> </span><span class="nv">$SLOW5_PATH</span>
+
+f5c<span class="w"> </span>eventalign<span class="w"> </span>-t<span class="w"> </span><span class="m">48</span><span class="w">  </span>-r<span class="w"> </span><span class="nv">$FASTQ_PATH</span><span class="w"> </span>--rna<span class="w">  </span>-g<span class="w"> </span><span class="nv">$genome</span><span class="w"> </span>-b<span class="w"> </span><span class="nv">$BAM</span><span class="w"> </span>--slow5<span class="w"> </span><span class="nv">$SLOW5_PATH</span><span class="w"> </span>--min-mapq<span class="w"> </span><span class="m">0</span><span class="w"> </span>--signal-index<span class="w"> </span>--scale-events<span class="w"> </span>--samples<span class="w"> </span>--print-read-names<span class="w"> </span>--sam<span class="w"> </span>&gt;<span class="w"> </span><span class="nv">$OUT</span>
+</code></pre></div>
+<h3 id="nanopolish">nanopolish</h3>
+<p>We used this format in earlier stages of the project, our workflow can still support it.
+Note that our prediction workflow is optimised for f5c sam format.</p>
+<p>nanopolish f5c is available from:  https://github.com/jts/nanopolish</p>
+<p>Example event align command:</p>
+<div class="highlight"><pre><span></span><code>nanopolish<span class="w"> </span>index<span class="w"> </span>-d<span class="w"> </span><span class="si">${</span><span class="nv">fast5_path</span><span class="si">}</span><span class="w"> </span>-s<span class="w"> </span><span class="si">${</span><span class="nv">guppy_files</span><span class="si">}</span>/sequencing_summary.txt<span class="w"> </span><span class="nv">$fastq</span>
+
+nanopolish<span class="w"> </span>eventalign<span class="w"> </span>-t<span class="w"> </span><span class="m">48</span><span class="w"> </span>--reads<span class="w"> </span><span class="nv">$fastq</span><span class="w"> </span>--bam<span class="w"> </span><span class="nv">$bam_file</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--genome<span class="w"> </span><span class="nv">$fasta</span><span class="w"> </span>--signal-index<span class="w"> </span>--scale-events<span class="w"> </span>--samples<span class="w"> </span>--print-read-names<span class="w"> </span>&gt;<span class="w"> </span><span class="nv">$output_path</span>
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../installation/" class="btn btn-neutral float-left" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../read_level/" class="btn btn-neutral float-right" title="Read-level detection">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/comprna/SWARM" class="fa fa-code-fork" style="color: #fcfcfc"> comprna/SWARM</a>
+        </span>
+    
+    
+      <span><a href="../installation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../read_level/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://comprna.github.io/SWARM/diff_test/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Differential modification analysis - SWARM Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Differential modification analysis";
+        var mkdocs_page_input_path = "diff_test.md";
+        var mkdocs_page_url = "/SWARM/diff_test/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> SWARM Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../preprocessing/">Preprocessing raw data</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../read_level/">Read-level detection</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../site_level/">Site-level detection</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../modbam/">Modification visualization</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Differential modification analysis</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#running-diff-test">Running diff test</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#input-format">Input format</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#output-format">Output format</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#visualization">Visualization</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">SWARM Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Differential modification analysis</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/comprna/SWARM/edit/master/docs/diff_test.md">Edit on comprna/SWARM</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="differential-modification-analysis">Differential modification analysis</h1>
+<p>Identify reference sites with a significant difference in modification stoichiometry between conditions. </p>
+<h2 id="running-diff-test">Running diff test</h2>
+<p>Use <code>SWARM_diff.py</code> to run GLM test and identify reference coordinates where stoichiometry depends on the condition.</p>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>SWARM_diff.py<span class="w"> </span>-i<span class="w"> </span><span class="nv">$INPUT</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$OUT</span><span class="w"> </span>-n<span class="w"> </span><span class="m">24</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>Required:
+<span class="w">  </span>-i,<span class="w"> </span>--data_file<span class="w">            </span>Tab-separated<span class="w"> </span>file<span class="w"> </span>with<span class="w"> </span>columns:<span class="w"> </span>M2_file_path<span class="w"> </span>RepName<span class="w"> </span>Condition
+<span class="w">  </span>-o,<span class="w"> </span>--output_file<span class="w">          </span>Output<span class="w"> </span>file<span class="w"> </span>path
+
+<span class="w">  </span>Optional:
+<span class="w">  </span>-p,<span class="w"> </span>--M2_threshold<span class="w">         </span>Only<span class="w"> </span><span class="nb">test</span><span class="w"> </span>sites<span class="w"> </span>where<span class="w"> </span><span class="m">1</span>+<span class="w"> </span>sample<span class="w"> </span>has<span class="w"> </span>site<span class="w"> </span>probability<span class="w"> </span>over<span class="w"> </span>p<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span>
+<span class="w">  </span>-s,<span class="w"> </span>--Stoich_threshold<span class="w">     </span>Only<span class="w"> </span><span class="nb">test</span><span class="w"> </span>sites<span class="w"> </span>where<span class="w"> </span><span class="m">1</span>+<span class="w"> </span>sample<span class="w"> </span>has<span class="w"> </span>stoichiometry<span class="w"> </span>over<span class="w"> </span>s<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span>
+<span class="w">  </span>-delta,<span class="w"> </span>--Delta_threshold<span class="w">  </span>BH<span class="w"> </span>adjust<span class="w"> </span><span class="k">for</span><span class="w"> </span>sites<span class="w"> </span>over<span class="w"> </span>minimum<span class="w"> </span>delta<span class="w"> </span>stoichiometry<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span>
+<span class="w">  </span>-n,<span class="w"> </span>--ncpus<span class="w">                </span>Number<span class="w"> </span>of<span class="w"> </span>CPU<span class="w"> </span>threads<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>
+<span class="w">  </span>-h,<span class="w"> </span>--help<span class="w">                 </span>Show<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span><span class="nb">exit</span>
+</code></pre></div>
+<h3 id="input-format">Input format</h3>
+<p>Create an input file in tsv format, make sure to <strong>include header</strong> with 3 columns as seen below.  </p>
+<div class="highlight"><pre><span></span><code>M2_file_path<span class="w">    </span>RepName<span class="w"> </span>Condition
+/path/WT_rep1.m2.pred.tsv<span class="w">   </span><span class="m">1</span><span class="w">   </span>WT
+/path/WT_rep2.m2.pred.tsv<span class="w">   </span><span class="m">2</span><span class="w">   </span>WT
+/path/KO_rep1.m2.pred.tsv<span class="w">   </span><span class="m">1</span><span class="w">   </span>KO
+/path/KO_rep2.m2.pred.tsv<span class="w">   </span><span class="m">2</span><span class="w">   </span>KO
+</code></pre></div>
+<ol>
+<li>M2_file_path:  path to the site-level prediction file (tsv)</li>
+<li>RepName:       name of the rep, each sample of the same condition requires unique name</li>
+<li>Condition:     reps will be grouped by condition, label the same condition consistently</li>
+</ol>
+<h3 id="output-format">Output format</h3>
+<p>Produces a tsv file with p-values and average and per-rep information for sites tested with enough coverage in at least one sample. </p>
+<table>
+<thead>
+<tr>
+<th>contig</th>
+<th>position</th>
+<th>site</th>
+<th>coverage_KD</th>
+<th>coverage_WT</th>
+<th>probability_KD</th>
+<th>probability_WT</th>
+<th>stoichiometry_KD</th>
+<th>stoichiometry_WT</th>
+<th>avg_stoichi_KD</th>
+<th>avg_stoichi_WT</th>
+<th>pval</th>
+<th>adj_pval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>52978277</td>
+<td>GGACA</td>
+<td>[ 0. 42.]</td>
+<td>[ 0. 50.]</td>
+<td>[nan, 0.047]</td>
+<td>[nan, 0.04]</td>
+<td>[0. 0.047]</td>
+<td>[0.   0.04]</td>
+<td>0.048</td>
+<td>0.040</td>
+<td>0.859</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978282</td>
+<td>GGACT</td>
+<td>[23. 58.]</td>
+<td>[26. 75.]</td>
+<td>[0.043, 0.034]</td>
+<td>[0.0, 0.04]</td>
+<td>[0.043 0.034]</td>
+<td>[0.   0.04]</td>
+<td>0.037</td>
+<td>0.030</td>
+<td>0.801</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978287</td>
+<td>AGAAC</td>
+<td>[20. 50.]</td>
+<td>[22. 67.]</td>
+<td>[0.1, 0.04]</td>
+<td>[0.0, 0.074]</td>
+<td>[0.1  0.04]</td>
+<td>[0. 0.074]</td>
+<td>0.057</td>
+<td>0.056</td>
+<td>0.981</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978295</td>
+<td>CCAGA</td>
+<td>[ 0. 52.]</td>
+<td>[23. 68.]</td>
+<td>[nan, 0.038]</td>
+<td>[0.217, 0.132]</td>
+<td>[0. 0.038]</td>
+<td>[0.217  0.132]</td>
+<td>0.038</td>
+<td>0.154</td>
+<td>0.152</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978297</td>
+<td>TTATC</td>
+<td>[21. 54.]</td>
+<td>[25. 69.]</td>
+<td>[0.142, 0.055]</td>
+<td>[0.04, 0.028]</td>
+<td>[0.142 0.055]</td>
+<td>[0.04 0.0289]</td>
+<td>0.080</td>
+<td>0.032</td>
+<td>0.261</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978305</td>
+<td>CTAGC</td>
+<td>[25. 57.]</td>
+<td>[25. 77.]</td>
+<td>[0.0, 0.052]</td>
+<td>[0.0, 0.118]</td>
+<td>[0. 0.052]</td>
+<td>[0.  0.116]</td>
+<td>0.037</td>
+<td>0.088</td>
+<td>0.243</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978318</td>
+<td>GTACA</td>
+<td>[24. 52.]</td>
+<td>[21. 70.]</td>
+<td>[0.083, 0.173]</td>
+<td>[0.047, 0.171]</td>
+<td>[0.083 0.1732]</td>
+<td>[0.047 0.171]</td>
+<td>0.145</td>
+<td>0.143</td>
+<td>0.975</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978321</td>
+<td>TGAAC</td>
+<td>[24. 54.]</td>
+<td>[23. 63.]</td>
+<td>[0.0, 0.037]</td>
+<td>[0.043, 0.031]</td>
+<td>[0. 0.037]</td>
+<td>[0.043 0.031]</td>
+<td>0.026</td>
+<td>0.035</td>
+<td>0.753</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978328</td>
+<td>ATAGG</td>
+<td>[22. 50.]</td>
+<td>[25. 69.]</td>
+<td>[0.045, 0.0]</td>
+<td>[0.0, 0.043]</td>
+<td>[0.045 0.        ]</td>
+<td>[0. 0.043]</td>
+<td>0.014</td>
+<td>0.032</td>
+<td>0.496</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>52978329</td>
+<td>GGAAC</td>
+<td>[22. 49.]</td>
+<td>[25. 70.]</td>
+<td>[0.045, 0.02]</td>
+<td>[0.0, 0.028]</td>
+<td>[0.045 0.02]</td>
+<td>[0. 0.028]</td>
+<td>0.028</td>
+<td>0.021</td>
+<td>0.788</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="visualization">Visualization</h2>
+<p><img alt="My plot" src="../images/volcano.png" /></p>
+<!-- { width="400" style="display:block; margin:auto;"} -->
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../modbam/" class="btn btn-neutral float-left" title="Modification visualization"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/comprna/SWARM" class="fa fa-code-fork" style="color: #fcfcfc"> comprna/SWARM</a>
+        </span>
+    
+    
+      <span><a href="../modbam/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

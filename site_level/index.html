@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://comprna.github.io/SWARM/site_level/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Site-level detection - SWARM Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Site-level detection";
+        var mkdocs_page_input_path = "site_level.md";
+        var mkdocs_page_url = "/SWARM/site_level/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> SWARM Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../preprocessing/">Preprocessing raw data</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../read_level/">Read-level detection</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Site-level detection</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#sort-read-level-output">Sort read-level output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-site-level-detection">Running site-level detection</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#stoichiometry-parameters">Stoichiometry parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output-format">Output format</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#post-processing">Post-processing</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#site-level-cutoffs">Site-level cutoffs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#motif-filtering">Motif filtering</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#liftover-to-genome">Liftover to genome</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../modbam/">Modification visualization</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../diff_test/">Differential modification analysis</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">SWARM Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Site-level detection</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/comprna/SWARM/edit/master/docs/site_level.md">Edit on comprna/SWARM</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="site-level-detection">Site-level detection</h1>
+<p>SWARM_site_level.py aggregates read-level data per reference site to compute:</p>
+<ol>
+<li>
+<p>Stoichiometry (modification rate) computed from read-level modification calls</p>
+</li>
+<li>
+<p>Site-level probability (can narrow down modified sites from millions of tested coordinates)</p>
+</li>
+</ol>
+<h2 id="sort-read-level-output">Sort read-level output</h2>
+<p>Read-level predictions <strong>must be sorted</strong> to ensure correct site-level aggregation.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Use cat if pooling multiple replicates</span>
+cat<span class="w"> </span>rep1.pred.tsv<span class="w"> </span>rep2.pred.tsv<span class="w"> </span>&gt;<span class="w"> </span>reads.pred.tsv
+
+<span class="c1"># Sort based on the first column</span>
+sort<span class="w"> </span>-k<span class="w"> </span><span class="m">1</span><span class="w"> </span>reads.pred.tsv<span class="w"> </span>&gt;<span class="w"> </span>reads.pred.tsv.sorted
+
+<span class="c1"># Remove temp file if pooling</span>
+rm<span class="w"> </span>-f<span class="w"> </span>reads.pred.tsv
+</code></pre></div>
+<h2 id="running-site-level-detection">Running site-level detection</h2>
+<p>Run SWARM_site_level.py on sorted read-level data: </p>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>SWARM_site_level.py<span class="w"> </span>-i<span class="w"> </span>&lt;pred.tsv.sorted&gt;<span class="w"> </span>-o<span class="w"> </span>&lt;OUT&gt;<span class="w"> </span>-d<span class="w"> </span>&lt;<span class="m">0</span>.5,0.5&gt;
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>Required:
+<span class="w">  </span>-i,<span class="w"> </span>--input<span class="w">           </span>Path<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>sorted<span class="w"> </span>read-level<span class="w"> </span>prediction<span class="w"> </span>file
+<span class="w">  </span>-o,<span class="w"> </span>--file_out<span class="w">        </span>Path<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>output<span class="w"> </span>file
+
+Optional:
+<span class="w">  </span>-d,<span class="w"> </span>--double_cutoff<span class="w">   </span>Read-level<span class="w"> </span>cutoffs<span class="w"> </span><span class="k">for</span><span class="w"> </span>computing<span class="w"> </span>stoichiometry<span class="w"> </span><span class="o">[</span><span class="m">0</span>.5,0.5<span class="o">]</span>
+<span class="w">  </span>-n,<span class="w"> </span>--min_reads<span class="w">       </span>Minimun<span class="w"> </span><span class="nb">read</span><span class="w"> </span>coverage<span class="w"> </span>to<span class="w"> </span>output<span class="w"> </span>a<span class="w"> </span>site<span class="w"> </span><span class="o">[</span><span class="m">20</span><span class="o">]</span>
+<span class="w">  </span>-c,<span class="w"> </span>--cutoff<span class="w">          </span>Site-level<span class="w"> </span>probability<span class="w"> </span>cutoff<span class="w"> </span><span class="k">for</span><span class="w"> </span>printing<span class="w"> </span>sites<span class="w"> </span><span class="o">[</span><span class="m">0</span>.0<span class="o">]</span>
+<span class="w">  </span>-m,<span class="w"> </span>--DL_model<span class="w">        </span>Custom<span class="w"> </span>path<span class="w"> </span>to<span class="w"> </span>pretrainned<span class="w"> </span>site-level<span class="w"> </span>model
+<span class="w">  </span>--arch<span class="w">                </span>NN<span class="w"> </span>architecture<span class="w"> </span><span class="o">[</span>Mini/Mid/Large<span class="o">]</span>
+<span class="w">  </span>-h,<span class="w"> </span>--help<span class="w">            </span>Show<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span><span class="nb">exit</span>
+</code></pre></div>
+<h2 id="stoichiometry-parameters">Stoichiometry parameters</h2>
+<p><code>-d, --double_cutoff</code> arg can be used to select read-level cutoffs for computing stoichiometry. </p>
+<p>Expected input is a ',' separated value providing cutoffs for unmodified and modified calls. </p>
+<p>Default value is 0.5,0.5 ; meaning that p &lt; 0.5 is unmodified and p &gt; 0.5 is modified. </p>
+<p>Values between the two cutoffs are not included in stoichiometry computation, but are still kept for site-level model prediction and included in the coverage. </p>
+<p>Using higher cutoffs for calling modified reads would reduce stoichiometry but should give lower false positive rates.</p>
+<p>Stoichiometry is reported as rate (between 0 and 1).</p>
+<h2 id="output-format">Output format</h2>
+<p>SWARM_site_level.py outputs a tsv file in the same fromat as CHEUI (Mateos et al., 2024):
+<div class="highlight"><pre><span></span><code>contig<span class="w">  </span>position<span class="w">    </span>site<span class="w">    </span>coverage<span class="w">    </span>stoichiometry<span class="w">   </span>probability
+ENST00000000233.10<span class="w">  </span><span class="m">1000</span><span class="w">    </span>GATCTTGAG<span class="w">   </span><span class="m">223</span><span class="w"> </span><span class="m">0</span>.04522613065326633<span class="w"> </span><span class="m">4</span>.0531158447265625e-06
+ENST00000000233.10<span class="w">  </span><span class="m">1001</span><span class="w">    </span>ATCTTGAGT<span class="w">   </span><span class="m">227</span><span class="w"> </span><span class="m">0</span>.06111111111111111<span class="w"> </span><span class="m">8</span>.106231689453125e-06
+ENST00000000233.10<span class="w">  </span><span class="m">1012</span><span class="w">    </span>TAAATTTGC<span class="w">   </span><span class="m">164</span><span class="w"> </span><span class="m">0</span>.08527131782945736<span class="w"> </span><span class="m">6</span>.079673767089844e-06
+ENST00000000233.10<span class="w">  </span><span class="m">1013</span><span class="w">    </span>AAATTTGCT<span class="w">   </span><span class="m">182</span><span class="w"> </span><span class="m">0</span>.07586206896551724<span class="w"> </span><span class="m">4</span>.1484832763671875e-05
+ENST00000000233.10<span class="w">  </span><span class="m">1017</span><span class="w">    </span>TTGCTGTGG<span class="w">   </span><span class="m">151</span><span class="w"> </span><span class="m">0</span>.00684931506849315<span class="w"> </span><span class="m">0</span>.00010669231414794922
+</code></pre></div></p>
+<h2 id="post-processing">Post-processing</h2>
+<h3 id="site-level-cutoffs">Site-level cutoffs</h3>
+<p>SWARM can detect modifications in a single sample, where the target modfiication is usually present in under 1% of the tested coordinates. </p>
+<p>To enrich for the true modified sites, we use a standard 10% stoichiometry cutoff with additional neural-network filtering based on the distribution of read-level probabilities.  </p>
+<p>Site-level models were trained on pre-defined mixtures of modified and unmodified reads and extensively benchmarked on IVT transcriptomes and cellular data. </p>
+<p>For single-sample detection we select sites with: </p>
+<ol>
+<li>
+<p>Stoichiometry &gt; 0.1 (&gt;10%)</p>
+</li>
+<li>
+<p>Site-level probability with a false-positive rate &lt; 0.1% on unmodified IVT transcriptomes</p>
+</li>
+</ol>
+<p>Cutoffs for different contexts:</p>
+<table>
+<thead>
+<tr>
+<th>Kit</th>
+<th>Modification</th>
+<th>Context</th>
+<th>Cutoff</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RNA002</td>
+<td>m6A</td>
+<td>all-context</td>
+<td>0.999953</td>
+</tr>
+<tr>
+<td>RNA002</td>
+<td>m6A</td>
+<td>DRACH-only</td>
+<td>0.9972</td>
+</tr>
+<tr>
+<td>RNA004</td>
+<td>m6A</td>
+<td>all-context</td>
+<td>0.9999999999986</td>
+</tr>
+<tr>
+<td>RNA004</td>
+<td>m6A</td>
+<td>DRACH-only</td>
+<td>0.9999986</td>
+</tr>
+<tr>
+<td>RNA002</td>
+<td>Ψ</td>
+<td>all-context</td>
+<td>0.9943</td>
+</tr>
+<tr>
+<td>RNA002</td>
+<td>Ψ</td>
+<td>PUS7-TRUB1-only</td>
+<td>0.9925</td>
+</tr>
+<tr>
+<td>RNA004</td>
+<td>Ψ</td>
+<td>all-context</td>
+<td>0.999999988</td>
+</tr>
+<tr>
+<td>RNA004</td>
+<td>Ψ</td>
+<td>PUS7-TRUB1-only</td>
+<td>0.999999975</td>
+</tr>
+<tr>
+<td>RNA002</td>
+<td>m5C</td>
+<td>all-context</td>
+<td>0.999969</td>
+</tr>
+<tr>
+<td>RNA002</td>
+<td>m5C</td>
+<td>NSUN6-only</td>
+<td>0.99981</td>
+</tr>
+<tr>
+<td>RNA004</td>
+<td>m5C</td>
+<td>all-context</td>
+<td>0.99999999989</td>
+</tr>
+<tr>
+<td>RNA004</td>
+<td>m5C</td>
+<td>NSUN6-only</td>
+<td>0.988</td>
+</tr>
+</tbody>
+</table>
+<h3 id="motif-filtering">Motif filtering</h3>
+<h3 id="liftover-to-genome">Liftover to genome</h3>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../read_level/" class="btn btn-neutral float-left" title="Read-level detection"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../modbam/" class="btn btn-neutral float-right" title="Modification visualization">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/comprna/SWARM" class="fa fa-code-fork" style="color: #fcfcfc"> comprna/SWARM</a>
+        </span>
+    
+    
+      <span><a href="../read_level/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../modbam/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

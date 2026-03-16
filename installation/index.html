@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://comprna.github.io/SWARM/installation/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Installation - SWARM Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Installation";
+        var mkdocs_page_input_path = "installation.md";
+        var mkdocs_page_url = "/SWARM/installation/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> SWARM Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Installation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#download-the-code-and-models">Download the code and models</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#compile-swarm-preprocessing">Compile SWARM preprocessing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#file-tree">File tree</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../preprocessing/">Preprocessing raw data</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../read_level/">Read-level detection</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../site_level/">Site-level detection</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../modbam/">Modification visualization</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../diff_test/">Differential modification analysis</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">SWARM Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/comprna/SWARM/edit/master/docs/installation.md">Edit on comprna/SWARM</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="install-swarm">Install SWARM</h1>
+<h2 id="download-the-code-and-models">Download the code and models</h2>
+<p>Simply clone from github (install lfs to download large h5 files):</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>lfs<span class="w"> </span>install
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/comprna/SWARM/<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>SWARM<span class="w"> </span>
+</code></pre></div>
+<p>If git lfs cannot be installed, download the models from the dropbox link:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/comprna/SWARM/<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>SWARM<span class="w"> </span>
+rm<span class="w"> </span>-rf<span class="w"> </span>SWARM_models
+wget<span class="w"> </span><span class="s1">&#39;https://www.dropbox.com/scl/fi/wghpvv9plhr4mbpwkuqjd/SWARM_models.tar.gz?rlkey=i1z1do97wbgn0stoaakh117qy&amp;st=ih3xs5fa&amp;dl=0&#39;</span><span class="w"> </span>-O<span class="w"> </span>SWARM_models.tgz
+tar<span class="w"> </span>-xzf<span class="w"> </span>SWARM_models.tgz<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>SWARM_models.tgz
+</code></pre></div>
+<h2 id="compile-swarm-preprocessing">Compile SWARM preprocessing</h2>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>SWARM_scripts/preprocess/
+<span class="c1">#build and compile htslib, slow5tools, SWARM_preprocess</span>
+bash<span class="w"> </span>build.sh
+</code></pre></div>
+<h2 id="dependencies">Dependencies</h2>
+<p>SWARM supports GPU inference with tensorflow, tested with versions 2.8.0 and 2.15.0</p>
+<p>GPU-configured tensorflow should be available on most HPC systems. Otherwise, you can install tensorflow configured for GPU as per https://www.tensorflow.org/install/</p>
+<p>python requirements:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">python</span><span class="o">==</span><span class="m">3</span>.11.7
+<span class="nv">tensorflow</span><span class="o">==</span><span class="m">2</span>.15.0
+<span class="nv">numpy</span><span class="o">==</span><span class="m">1</span>.26.2
+<span class="nv">pandas</span><span class="o">==</span><span class="m">2</span>.2.0
+scikit-learn<span class="o">==</span><span class="m">1</span>.4.0
+<span class="nv">pysam</span><span class="o">==</span><span class="m">0</span>.22.1
+<span class="nv">scipy</span><span class="o">==</span><span class="m">1</span>.14.1
+<span class="nv">statsmodels</span><span class="o">==</span><span class="m">0</span>.14.4
+</code></pre></div>
+<p>Example for setting up the SWARM environment with conda:</p>
+<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>SWARM<span class="w"> </span><span class="nv">python</span><span class="o">==</span><span class="m">3</span>.11.7<span class="w"> </span><span class="nv">numpy</span><span class="o">==</span><span class="m">1</span>.26.2<span class="w"> </span><span class="nv">pandas</span><span class="o">==</span><span class="m">2</span>.2.0<span class="w"> </span>scikit-learn<span class="o">==</span><span class="m">1</span>.4.0<span class="w"> </span><span class="nv">pysam</span><span class="o">==</span><span class="m">0</span>.22.1<span class="w"> </span><span class="nv">scipy</span><span class="o">==</span><span class="m">1</span>.14.1<span class="w"> </span><span class="nv">statsmodels</span><span class="o">==</span><span class="m">0</span>.14.4
+conda<span class="w"> </span>activate<span class="w"> </span>SWARM
+</code></pre></div>
+<h2 id="file-tree">File tree</h2>
+<div class="highlight"><pre><span></span><code>└── SWARM
+    ├── README.md
+    ├── SWARM_models
+    │   ├── kmer_model
+    │   │   ├── model_5-mer.RNA002.csv
+    │   │   └── model_5-mer.RNA004.csv
+    │   ├── Model1
+    │   │   ├── RNA002
+    │   │   │   ├── m5C
+    │   │   │   │   └── Model_100_epoch_relu.h5
+    │   │   │   ├── m6A
+    │   │   │   │   └── Model_100_epoch_relu.h5
+    │   │   │   └── pU
+    │   │   │       └── Model_100_epoch_relu.h5
+    │   │   └── RNA004
+    │   │       ├── m5C
+    │   │       │   └── Model_100_epoch_relu.h5
+    │   │       ├── m6A
+    │   │       │   └── Model_100_epoch_relu.h5
+    │   │       └── pU
+    │   │           └── Model_100_epoch_relu.h5
+    │   └── Model2
+    │       ├── RNA002
+    │       │   ├── m5C
+    │       │   │   └── Model_100_epoch_relu.h5
+    │       │   ├── m6A
+    │       │   │   └── Model_100_epoch_relu.h5
+    │       │   └── pU
+    │       │       └── Model_100_epoch_relu.h5
+    │       └── RNA004
+    │           ├── m5C
+    │           │   └── Model_100_epoch_relu.h5
+    │           ├── m6A
+    │           │   └── Model_100_epoch_relu.h5
+    │           └── pU
+    │               └── Model_100_epoch_relu.h5
+    └── SWARM_scripts
+        ├── predict
+        │   ├── DL_models.py
+        │   ├── network_21122023.py
+        │   ├── network_2132024.py
+        │   ├── network_27082022.py
+        │   ├── predict_model1_from_pickle.py
+        │   ├── predict_model1_parallel_modbam.py
+        │   └── predict_model1_parallel.py
+        ├── preprocess
+        │   ├── argagg.hpp
+        │   ├── build.sh
+        │   ├── check_RNA_kit.cpp
+        │   ├── Makefile
+        │   ├── split_bams.py
+        │   ├── SWARM_preprocess.cpp
+        │   ├── SWARM_preprocess.py
+        │   ├── SWARM_preprocess_target_9mers.cpp
+        │   └── SWARM_preprocess_targets.cpp
+        ├── process_modbam.py
+        ├── SWARM_diff.py
+        ├── SWARM_read_level.py
+        ├── SWARM_site_level.py
+        └── train_models
+            ├── assemble_data.py
+            ├── network_27082022.py
+            ├── split_training_by_9mers.py
+            ├── train_model1.py
+            └── trim_tsv_events.py
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../preprocessing/" class="btn btn-neutral float-right" title="Preprocessing raw data">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/comprna/SWARM" class="fa fa-code-fork" style="color: #fcfcfc"> comprna/SWARM</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../preprocessing/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
