@@ -79,22 +79,30 @@ rm -rf  $TEMPDIR
 ### f5c
 Our workflow supports both f5c sam and nanopolish tsv formats.
 We highly recommend opting for **f5c** and **sam** files.
-This requires the slow5 conversion outlined in previous step.
+This requires the slow5 conversion outlined in the previous step.
 
 https://github.com/hasindu2008/f5c
 
 Example event align command:
 
 ```
-#f5c index
+## f5c index
 f5c index -t 48 $FASTQ_PATH --slow5 $SLOW5_PATH
 
-#sam event alignment format
+## SQK-RNA002 event alignment
 f5c  eventalign -t 48  -r $FASTQ_PATH --rna  -g $genome -b $BAM --slow5 $SLOW5_PATH --min-mapq 0 --secondary=yes --signal-index --scale-events --samples --print-read-names --sam > $OUT
+
+## SQK-RNA004 event alignment
+# first download the pore model used for SWARM training
+wget https://raw.githubusercontent.com/hasindu2008/f5c/v1.3/test/rna004-models/rna004.nucleotide.5mer.model
+
+# then run f5c giving the downloaded kmer-model path
+f5c  eventalign --kmer-model /path/to/rna004.nucleotide.5mer.model -t 48 -r $FASTQ_PATH --rna  -g $genome -b $BAM --slow5 $SLOW5_PATH --min-mapq 0 --secondary=yes --signal-index --scale-events --samples --print-read-names --sam > $OUT
+
 ```
 
 ### nanopolish
-We used this format in earlier stages of the project, our workflow can still support it.
+We used this format in earlier stages of the project, our workflow can still support it for SQK-RNA002.
 Note that our prediction workflow is optimised for f5c sam format.
 
 https://github.com/jts/nanopolish
