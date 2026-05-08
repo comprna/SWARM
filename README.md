@@ -299,13 +299,14 @@ python3 train_models/read-level/assemble_data.py --input_positive <positive_pref
 ```
 python3 train_models/read-level/train_read-level.py -i <assembled_prefix> -o <outpath> //
 [--vector_len 36] [--features 7] [--labels 2] [--epochs 100]
-```
 
+
+```
 ## Train site-level prediction
 ### Trim eventalign files
 This optional step reduces the time to retrain models as preprocessing only a fraction of signals from a whole sample is usually enough for training. We trim for events comprising 1000 signals per 9mer (skipping first 500 used for training). 
 ```
-python3 train_models/site-level/trim_nanopolish_site-level.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
+python3 train_models/site-level/trim_nanopolish_site-level.py -i <eventalign.tsv> -o <out_prefix> --limit_out 1000 --prev_limit 500 --out_counter
 ```
 ### Preprocess trimmed files
 Preprocess trimmed files for read-level input features. Make sure to include **--out_counter** arg here!
