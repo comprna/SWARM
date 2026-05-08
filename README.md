@@ -177,7 +177,7 @@ export MOD=m6A    # [<m6A> <m5C> <pU>]
 export FASTA=Homo_sapiens.GRCh38.cdna.fa
 export BLOW5=Hek293_mRNA.blow5
 export SAM=Hek293_mRNA_f5C.events.sam
-export OUT=Hek293_mRNA.$MOD.m1.tsv
+export OUT=Hek293_mRNA.$MOD.pred.tsv
 
 python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT 
 ```
@@ -210,7 +210,7 @@ python3 SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -o $OUT
 
 ## Site-level detection
 
-First sort the model1 output, use cat if pooling multiple replicates.
+First sort the read-level output, use cat if pooling multiple replicates.
 
 ```
 cat Hek293_mRNA_rep1_pU.pred.tsv Hek293_mRNA_rep2_pU.pred.tsv > Hek293_mRNA_pooled_pU.pred.tsv
@@ -221,7 +221,7 @@ Run site-level detection on sorted read-level data:
 
 ```
 INPUT=Hek293_mRNA_pooled_pU.pred.tsv.sorted
-OUT=Hek293_mRNA_pooled_pU.m2.pred.tsv
+OUT=Hek293_mRNA_pooled_pU.site.pred.tsv
 python3 SWARM_site_level.py -i $INPUT -o $OUT 
 ```
 
@@ -232,10 +232,10 @@ Run differential modification test to find reference coordinates with stoichiome
 Set up a **tab-separated config** file with paths to inputs. Make sure that the header is present. 
 ```
 M2_file_path  RepName  Condition
-WT_rep1.m2.pred.tsv  1  WT
-WT_rep2.m2.pred.tsv  2  WT
-KD_rep1.m2.pred.tsv  1  KD
-KD_rep2.m2.pred.tsv  2  KD
+WT_rep1.site.pred.tsv  1  WT
+WT_rep2.site.pred.tsv  2  WT
+KD_rep1.site.pred.tsv  1  KD
+KD_rep2.site.pred.tsv  2  KD
 ```
 
 Run SWARM_diff on site-level predictions (12 threads): 
@@ -258,11 +258,11 @@ mod.sam can also be generated from sorted read-level pred.tsv files.
 This should be faster and also enables filtering of sites for cleaner results. 
 
 ```
-M1_sorted=Hek293_mRNA_pooled_pU.pred.tsv.sorted
+prediction_sorted=Hek293_mRNA_pooled_pU.pred.tsv.sorted
 SAM=Hek293_mRNA_f5C.events.sam
-M2=Hek293_mRNA_pooled_pU.m2.pred.tsv
-OUT=Hek293_mRNA_pooled_pU.m2.pred.tsv
-python3 SWARM_make_modsam.py -i $M1_sorted -s $SAM -m $M2 -o $OUT
+SITES=Hek293_mRNA_pooled_pU.site.pred.tsv
+OUT=Hek293_mRNA_pooled_pU.site.pred.tsv
+python3 SWARM_make_modsam.py -i $prediction_sorted -s $SAM -m $SITES -o $OUT
 ```
 
 
@@ -272,12 +272,11 @@ python3 SWARM_make_modsam.py -i $M1_sorted -s $SAM -m $M2 -o $OUT
 ## Train read-level prediction
 ### Trim eventalign files
 This optional step reduces the time to retrain models as preprocessing only a fraction of signals from a whole sample is usually enough for training. We trim for events comprising 500 signals per 9mer. 
-
 ```
-python3 train_models/trim_tsv_events.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
+python3 train_models/read-level/trim_tsv_events.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
 ```
 ### Preprocess trimmed files
-Preprocess trimmed files for model1 input features. Make sure to include **--out_counter** arg here!
+Preprocess trimmed files for read-level input features. Make sure to include **--out_counter** arg here!
 ```
 python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
 --nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
@@ -285,20 +284,63 @@ python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
 ### Split training/validation/testing data
  Use this step for stratified sampling of the preprocessed signals. Splits equal number of signals per 9mer for positive/negative labels in each of train/validation/test set (60/20/20 split by default). Run on each sample, to make positive/negative data. Give same outpath if multiple samples are intended to be used under the same positive/negative label.
 ```
-python3 train_models/split_training_by_9mers.py -i <preprocesed.pickle> //
+python3 train_models/read-level/split_training_by_9mers.py -i <preprocesed.pickle> //
 --counts <preprocessed.counts> -o <outpath> --limit <signals_per_9mer> //
 [--train_percent 0.6] [--validate_percent 0.2]
 ```
 ### Assemble data
  Use this step for finalising training/validation/testing data with matching positive/negative labels.
 ```
-python3 train_models/assemble_data.py --input_positive <positive_prefix> //
+python3 train_models/read-level/assemble_data.py --input_positive <positive_prefix> //
 --input_negative <negative_prefix> -o <outpath> [--positive_label 1] [--negative_label 0]
 ```
 ### Train read-level model
  Use this step for training binary classifier of modification states with single-base single-molecule resolution. 
 ```
-python3 train_models/train_model1.py -i <assembled_prefix> -o <outpath> //
+python3 train_models/read-level/train_read-level.py -i <assembled_prefix> -o <outpath> //
 [--vector_len 36] [--features 7] [--labels 2] [--epochs 100]
 ```
+
+## Train site-level prediction
+### Trim eventalign files
+This optional step reduces the time to retrain models as preprocessing only a fraction of signals from a whole sample is usually enough for training. We trim for events comprising 1000 signals per 9mer (skipping first 500 used for training). 
+```
+python3 train_models/site-level/trim_nanopolish_site-level.py -i <eventalign.tsv> -o <out_prefix> --limit-out 500
+```
+### Preprocess trimmed files
+Preprocess trimmed files for read-level input features. Make sure to include **--out_counter** arg here!
+```
+python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
+--nanopolish <eventalign_trimmed.tsv> -o $out_prefix --out_counter
+```
+### Predict with read-level model 
+Predict read-level probabilities on preprocessed data
+```
+python3 SWARM_read_level.py --predict -m $MOD --pickle $out_prefix.pickle -o $out_prefix.pred.tsv
+```
+### Create mixtures of stoichiometry and coverage
+Create random mixtures of read-level probabilities with artificial coverages and stoichiometries for training site-level models. Need one pediction file for unmodified and one for target modification data. Provide cannonical nucleotide of the target modification to --center.
+```
+python3 train_models/site-level/make_site-level_features_parallel.py -NM unmodified.pred.tsv -M modified.pred.tsv --center  <A/C/T> -o ${OutDir} -L 40 --kmer All --features Standard
+```
+### Split training/validation/testing data
+Use this step for generating train/validation/test set (60/20/20 split by default). Run on each created mixture to make positive/negative data
+```
+# split positive data
+python3 train_models/site-level/split_training_testing_site-level.py ${OutDir}/XWT_added_train.p WT_added ${OutDir}/
+#split negative data
+python3 train_models/site-level/split_training_testing_site-level.py ${OutDir}/XKO_train.p KO ${OutDir}/
+```
+### Assemble data
+ Use this step for finalising training/validation/testing data with matching positive/negative labels.
+```
+python3 train_models/site-level/assemble_data_site-level.py --input_positive ${OutDir}/WT_added --input_negative ${OutDir}/KO -o $AssembledDataPrefix
+```
+### Train site-level model
+Use this step for training binary classifier of site modification states. 
+```
+python3 train_models/site-level/train_site-level.py -i $AssembledDataPrefix -o $OutDir --vector_len 100 --features 1 --labels 1 --arch Mini
+```
+
+
 
