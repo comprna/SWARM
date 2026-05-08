@@ -278,7 +278,7 @@ python3 train_models/read-level/trim_tsv_events.py -i <eventalign.tsv> -o <out_p
 ### Preprocess trimmed files
 Preprocess trimmed files for read-level input features. Make sure to include **--out_counter** arg here!
 ```
-python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
+python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C> --bam <BAM> //
 --nanopolish <eventalign_trimmed.tsv> -o <out_prefix> --out_counter
 ```
 ### Split training/validation/testing data
@@ -311,7 +311,7 @@ python3 train_models/site-level/trim_nanopolish_site-level.py -i <eventalign.tsv
 ### Preprocess trimmed files
 Preprocess trimmed files for read-level input features. Make sure to include **--out_counter** arg here!
 ```
-python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C/ac4C> --bam <BAM> //
+python3 SWARM_read_level.py --preprocess -m <pU/m6A/m5C> --bam <BAM> //
 --nanopolish <eventalign_trimmed.tsv> -o $out_prefix --out_counter
 ```
 ### Predict with read-level model 
