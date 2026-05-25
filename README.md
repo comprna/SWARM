@@ -130,7 +130,7 @@ git lfs install
 git clone https://github.com/comprna/SWARM/ && cd SWARM
 ```
 
-This step is highly recommended and required for using our C++ preprocessing of sam event files. Skip if using eventalign.tsv format.
+This step is highly recommended and required for using our C++ preprocessing of sam event files. Compiling SWARM_preprocess and prerequisites should take ~ 2 minutes. Can skip if using eventalign.tsv format (much slower and much more storage required).
 
 ```
 cd SWARM_scripts/preprocess/
