@@ -96,7 +96,7 @@ parser._action_groups.append(OPTIONAL)
 ARGS = parser.parse_args()
 
 # required arg
-signals_input = ARGS.signals_input
+signals_input = ARGS.signals_input + "_0"
 DL_model = ARGS.DL_model
 label = ARGS.label
 file_out = ARGS.file_out
