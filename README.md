@@ -3,6 +3,8 @@ Detection of pseudouridine, m6A, and m5C on individual molecules from direct RNA
 
 Detailed documentation is available at https://comprna.github.io/SWARM/
 
+Demo dataset and commands available at https://github.com/comprna/SWARM/tree/main/demo
+
 ------------------------------------------
 # Table of Contents
 ------------------------------------------
