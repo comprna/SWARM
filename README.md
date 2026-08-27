@@ -143,23 +143,31 @@ bash build.sh
 ```
 
 ### Dependencies
-SWARM supports GPU inference with tensorflow, tested with versions 2.8.0 and 2.15.0
 
-GPU-configured tensorflow should be available on most HPC systems.
-Otherwise, you can install tensorflow configured for GPU as per https://www.tensorflow.org/install/
+SWARM supports GPU inference with tensorflow, tested with versions 2.8.0 and 2.15.0. 
 
-python requirements:
+### Using pre-installed tensorflow
+If your HPC has a tensorflow module, simply load tensorflow and use the loaded python path for creating venv:
 ```
-python=3.11.7
-tensorflow==2.15.0
-numpy==1.26.2
-pandas==2.2.0
-sklearn==1.4.0
-pysam==0.22.1
+module load tensorflow/2.15.0
+python3 -m venv swarm_env
+source swarm_env/bin/activate
+python3 -m pip install pysam==0.22.1 numpy==1.26.2 pandas==2.2.0 scikit-learn==1.4.0
+
+# make sure to activate the venv before running SWARM read-level and site-level prediction
+module load tensorflow/2.15.0
+source /PATH/TO/swarm_env/bin/activate
 ```
 
+### Using containerised environment
+If tensorflow with GPU configuration is not pre-installed or there are issues with dependencies, we provide a containerised environment with tensorflow and pysam:
+https://zenodo.org/records/22123294
+```
+# You can use singularity to run read-level and site-level prediction:
+singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 script.py ...
 
-
+# Environment tested on NCI gadi HPC using singularity version 3.11.3 and NVIDIA Volta GPUs
+```
 
 
 ## Read-level single-base detection
@@ -173,7 +181,6 @@ Models for RNA002 or RNA004 chemistry are automatically selected based on the bl
 Example bash code to run SWARM read-level prediction:
 
 ```
-module load tensorflow
 
 export MOD=m6A    # [<m6A> <m5C> <pU>]   
 export FASTA=Homo_sapiens.GRCh38.cdna.fa
@@ -181,7 +188,13 @@ export BLOW5=Hek293_mRNA.blow5
 export SAM=Hek293_mRNA_f5C.events.sam
 export OUT=Hek293_mRNA.$MOD.pred.tsv
 
-python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT 
+# using pre-installed tensorflow
+module load tensorflow/2.15.0
+source /PATH/TO/swarm_env/bin/activate
+python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT
+
+# or using singularity
+singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT
 ```
 
 ### eventalign.tsv preprocessing
@@ -224,7 +237,14 @@ Run site-level detection on sorted read-level data:
 ```
 INPUT=Hek293_mRNA_pooled_pU.pred.tsv.sorted
 OUT=Hek293_mRNA_pooled_pU.site.pred.tsv
-python3 SWARM_site_level.py -i $INPUT -o $OUT 
+
+# using pre-installed tensorflow
+module load tensorflow/2.15.0
+source /PATH/TO/swarm_env/bin/activate
+python3 SWARM_site_level.py -i $INPUT -o $OUT
+
+# or using singularity
+singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 SWARM_site_level.py -i $INPUT -o $OUT
 ```
 
 ## Differential modification test
