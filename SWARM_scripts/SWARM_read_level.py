@@ -17,9 +17,9 @@ MODEL_KMER = MODELS_PATH + "kmer_model/model_5-mer"
 PREPROCESS_CPP = SCRIPTS_PATH + "preprocess/SWARM_preprocess"
 PREPROCESS_py = SCRIPTS_PATH + "preprocess/SWARM_preprocess.py"
 split_script = SCRIPTS_PATH + "preprocess/split_bams.py"
-regPredict = SCRIPTS_PATH + "predict/predict_model1_parallel.py"
-modsamPredict = SCRIPTS_PATH + "predict/predict_model1_parallel_modsam.py"
-onlyPredict = SCRIPTS_PATH + "predict/predict_model1_from_pickle.py"
+regPredict = SCRIPTS_PATH + "predict/predict_read_level_parallel.py"
+modsamPredict = SCRIPTS_PATH + "predict/predict_read_level_parallel_modsam.py"
+onlyPredict = SCRIPTS_PATH + "predict/predict_read_level_from_pickle.py"
 CHECK_KIT_SCRIPT= SCRIPTS_PATH + "preprocess/check_RNA_kit"
 
 mod_dct = {
@@ -159,12 +159,12 @@ def main():
     parser.add_argument("-f", "--fasta", required=False, help="\nPath to the input fasta reference genome\n")
     parser.add_argument("-r", "--raw", required=False, help="\nPath to the input signals in blow5 format\n")
     
-    parser.add_argument("--model1", required=False,default=None, help="\nPath to the trained model1\n")
+    parser.add_argument("--model", required=False,default=None, help="\nPath to the trained model\n")
     parser.add_argument("--kmer", required=False,default=None, help="\nPath to the kmer model\n")
     parser.add_argument("--cpp", required=False,default=None, help="\nPath to compiled c++ preprcessing\n")
     parser.add_argument("--kit", required=False,default="RNA002", help="\nRNA sequencing kit [RNA004/RNA002]\n")
     parser.add_argument("--temp", required=False, help="\nDirectory for temp files\n")
-    parser.add_argument("--arch", required=False,default=None, help="\nModel1 network from Mini/Mid/Large. Mini is default\n")
+    parser.add_argument("--arch", required=False,default=None, help="\nread_level network from Mini/Mid/Large. Mini is default\n")
     parser.add_argument("--modsam", help="\nMakes sam file (MM/ML tags) as <prefix>.mod.sam\n", action="store_true")
     parser.add_argument("--nworkers", help="\nNumber of C++ preprocessing workers\n", default=4,type=int)
     parser.add_argument("--limit", help="\nNumber of signals to preprocess\n", default=-1,type=int)
@@ -174,7 +174,7 @@ def main():
     parser.add_argument("--base", required=False, help="\nTarget base to preprocess\n")
     parser.add_argument("-t", "--threads", required=False, default=1,type=int, help="\nNumber of threads for preprocessing\n")
 
-    parser.add_argument("-p", "--pickle", required=False, help="\nPath to the input pickle file (model1 output)\n")
+    parser.add_argument("-p", "--pickle", required=False, help="\nPath to the input pickle file (model output)\n")
 
     args = parser.parse_args()
 
@@ -216,11 +216,11 @@ def main():
             
             print("Using model arch:",ARCH, "\n")
 
-            if args.model1:
-                MODEL1_PATH = args.model1
+            if args.model:
+                MODEL_PATH = args.model
             else:
-                MODEL1_PATH = os.path.join(script_dir,MODELS_PATH + f"Model1/{KIT}/{RNAmod}/Model_100_epoch_relu.h5")
-            print("Model1 =",MODEL1_PATH)
+                MODEL_PATH = os.path.join(script_dir,MODELS_PATH + f"read_level/{KIT}/{RNAmod}/Model_100_epoch_relu.h5")
+            print("read_level =",MODEL_PATH)
             if args.temp: # if temporary directory provided (ideally on SSD)
                 TMP = args.temp
                 if TMP[-1] == "/":
@@ -241,7 +241,7 @@ def main():
                 args_script_py = ["python3",os.path.join(script_dir,SCRIPT_py),
                               "-i", TEMP,
                               "-o", args.out,
-                              "-m", MODEL1_PATH,
+                              "-m", MODEL_PATH,
                               "--sam", args.sam,
                               "--arch", ARCH,
                               "-l", label_dct[f"{RNAmod}_{KIT}"]]
@@ -252,7 +252,7 @@ def main():
                 args_script_py = ["python3",os.path.join(script_dir,SCRIPT_py),
                               "-i", TEMP,
                               "-o", args.out + ".pred.tsv",
-                              "-m", MODEL1_PATH,
+                              "-m", MODEL_PATH,
                               "-l", label_dct[f"{RNAmod}_{KIT}"],
                               "--arch", ARCH,
                               "--nworkers", str(args.nworkers),
@@ -386,11 +386,11 @@ def main():
             except KeyError:
                 raise ("--RNAmod must be one of pU / m6A / m5C / ac4C ;\ncase sensitive!")
 
-            MODEL1_PATH = os.path.join(script_dir,MODELS_PATH + f"Model1/{RNAmod}/Model_100_epoch_relu.h5")
+            MODEL_PATH = os.path.join(script_dir,MODELS_PATH + f"read_level/{RNAmod}/Model_100_epoch_relu.h5")
             args_script_py = ["python3", os.path.join(script_dir,onlyPredict),
                               "-i", args.pickle,
                               "-o", args.out,
-                              "-m", MODEL1_PATH,
+                              "-m", MODEL_PATH,
                               "-l", "0"]
 
             subprocess.run(args_script_py)
