@@ -10,7 +10,7 @@ OPTIONAL = parser._action_groups.pop()
 REQUIRED = parser.add_argument_group('required arguments')
 
 REQUIRED.add_argument("-i", "--input",
-                      help="path to read-level prediction file from CHEUI_predict_model1.py",
+                      help="path to read-level prediction file",
                       metavar='\b',
                       required=True)
 
@@ -20,17 +20,17 @@ REQUIRED.add_argument("-o", "--file_out",
                       required=True)
 
 REQUIRED.add_argument("-m", "--DL_model",
-                      help="path to pretrainned DL model 2",
+                      help="path to pretrainned site-level model",
                       default=None)
 
 REQUIRED.add_argument("-c", "--cutoff",
-                      help="model 2 probability cutoff for printing sites",
+                      help="Site-level probability cutoff for printing sites",
                       metavar='\b',
                       default='-1'
                       )
 
 REQUIRED.add_argument("-d", "--double_cutoff",
-                      help="Model 1 probability cutoffs used to calculate the stoichiometry",
+                      help="Read-level probability cutoffs used to calculate the stoichiometry",
                       metavar='\b',
                       default='0.5,0.5',
                       )
@@ -235,19 +235,19 @@ with open(file_out_path, 'w') as file_out:
                 try:
                     model_name = label_dct[model_key]
                 except KeyError:
-                    raise ("Rerun model1 using SWARM_read_level.py ; Model info cannot be inferred from the label (3rd column).\nLabel should be integer 1-6\n"
+                    raise ("Rerun read-level using SWARM_read_level.py ; Model info cannot be inferred from the label (3rd column).\nLabel should be integer 1-6\n"
                            "{1:pU_RNA002, 2:pU_RNA004, 3:m5C_RNA002 , 4:m5C_RNA004, 5:m6A_RNA002, 6 :m6A_RNA004}")
                 else:
                     script_dir = os.path.dirname(os.path.abspath(__file__))
                     RNAmod,KIT = model_name.split("_")
-                    model2_path = os.path.join(script_dir,MODELS_PATH + f"Model2/{KIT}/{RNAmod}/Model_100_epoch_relu.h5")
+                    site_level_path = os.path.join(script_dir,MODELS_PATH + f"site_level/{KIT}/{RNAmod}/Model_100_epoch_relu.h5")
                     inputs = Input(shape=(100, 1))
                     outputs = build_jasper_model(inputs)
                     model = Model(inputs=inputs, outputs=outputs)
-                    model.load_weights(model2_path)
+                    model.load_weights(site_level_path)
             else:
                 if line[-1] != model_key:
-                    raise ("Exiting. Different model1 keys in 3rd column. Make sure that same model1 was used on all signals.")
+                    raise ("Exiting. Different read-level keys in 3rd column. Make sure that same read-level model was used on all signals.")
 
             ID_lst = line[0].split('_')
             last=ID_lst[-1]
