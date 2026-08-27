@@ -13,10 +13,10 @@ import time
 from multiprocessing import Pool, Process
 
 
-# function to parse output of Model2 predictions
-# Define a function to parse M2 output
-def parse_M2output(M2_file_path, RepName, Condition):
-    summary_data = pd.read_csv(M2_file_path, sep='\t', dtype={'contig': str, 'position': int, 'site': str})
+# function to parse output of site-level predictions
+# Define a function to parse site_level output
+def parse_site_leveloutput(site_level_file_path, RepName, Condition):
+    summary_data = pd.read_csv(site_level_file_path, sep='\t', dtype={'contig': str, 'position': int, 'site': str})
     summary_data.rename(columns={'coverage': f'coverage_{Condition}', 'stoichiometry': f'stoichiometry_{Condition}',
                                  'probability': f'probability_{Condition}'}, inplace=True)
     return summary_data
@@ -159,7 +159,7 @@ def combine_samples(args):
     df = pd.DataFrame()
     data_to_compare = pd.read_csv(args.data_file, sep='\t')
     for ind in data_to_compare.index:
-        temp_df = parse_M2output(data_to_compare['M2_file_path'][ind], data_to_compare['RepName'][ind],
+        temp_df = parse_site_leveloutput(data_to_compare['site_level_file_path'][ind], data_to_compare['RepName'][ind],
                                  data_to_compare['Condition'][ind])
         if df.empty:
             df = temp_df
@@ -168,7 +168,7 @@ def combine_samples(args):
     df = combine_data(df)
     for cond in data_to_compare['Condition'].unique():
         df = df[~(df["coverage_" + cond].apply(all_nan)) & (
-            df['probability_' + cond].apply(lambda x: any(val > args.M2_threshold for val in x))) \
+            df['probability_' + cond].apply(lambda x: any(val > args.site_level_threshold for val in x))) \
                 & (df['stoichiometry_' + cond].apply(lambda x: any(val > args.Stoichiometry_threshold for val in x)))]
         df['coverage_' + cond] = df['coverage_' + cond].apply(lambda x: np.nan_to_num(x))
         df['stoichiometry_' + cond] = df['stoichiometry_' + cond].apply(lambda x: np.nan_to_num(x))
@@ -215,9 +215,9 @@ if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-i','--data_file',
-                        help='tab-separated text files with first column M2_file_path, second column RepName, third column Condition')
+                        help='tab-separated text files with first column site_level_file_path, second column RepName, third column Condition')
     parser.add_argument('-o','--output_file', help='Output table.')
-    parser.add_argument('-p', '--M2_threshold', type=float, default=0,
+    parser.add_argument('-p', '--site_level_threshold', type=float, default=0,
                         help='Compare only sites with at least one sample modified with site-probability more than p. Default =0')
     parser.add_argument('-s', '--Stoich_threshold', type=float, default=0,
             help='Compare only sites with at least one sample modified with stoichiometry more than s. Default =0')
