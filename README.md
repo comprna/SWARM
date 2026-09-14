@@ -5,6 +5,8 @@ Detailed documentation is available at https://comprna.github.io/SWARM/
 
 Demo dataset and commands available at https://github.com/comprna/SWARM/tree/main/demo
 
+Benchmarking scripts available at https://github.com/comprna/SWARM/tree/main/SWARM_scripts/benchmark
+
 ------------------------------------------
 # Table of Contents
 ------------------------------------------
