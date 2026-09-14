@@ -28,96 +28,28 @@ bash build.sh
 
 ## Dependencies
 
-SWARM supports GPU inference with tensorflow, tested with versions 2.8.0 and 2.15.0
+SWARM supports GPU inference with tensorflow, tested with versions 2.8.0 and 2.15.0. 
 
-GPU-configured tensorflow should be available on most HPC systems. Otherwise, you can install tensorflow configured for GPU as per https://www.tensorflow.org/install/
+### Using pre-installed tensorflow
+If your HPC has a tensorflow module, simply load tensorflow and use the loaded python path for creating venv:
+```
+module load tensorflow/2.15.0
+python3 -m venv swarm_env
+source swarm_env/bin/activate
+python3 -m pip install pysam==0.22.1 numpy==1.26.2 pandas==2.2.0 scikit-learn==1.4.0
 
-python requirements:
-
-```bash
-python==3.11.7
-tensorflow==2.15.0
-numpy==1.26.2
-pandas==2.2.0
-scikit-learn==1.4.0
-pysam==0.22.1
-scipy==1.14.1
-statsmodels==0.14.4
+# make sure to activate the venv before running SWARM read-level and site-level prediction
+module load tensorflow/2.15.0
+source /PATH/TO/swarm_env/bin/activate
 ```
 
-Example for setting up the SWARM environment with conda:
+### Using containerised environment
+If tensorflow with GPU configuration is not pre-installed or there are issues with dependencies, we provide a containerised environment with tensorflow and pysam:
+https://zenodo.org/records/22123294
+```
+# You can use singularity to run read-level and site-level prediction:
+singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 script.py ...
 
-```bash
-conda create -n SWARM python==3.11.7 numpy==1.26.2 pandas==2.2.0 scikit-learn==1.4.0 pysam==0.22.1 scipy==1.14.1 statsmodels==0.14.4
-conda activate SWARM
+# Environment tested on NCI gadi HPC using singularity version 3.11.3 and NVIDIA Volta GPUs
 ```
 
-##File tree
-
-```
-└── SWARM
-    ├── README.md
-    ├── SWARM_models
-    │   ├── kmer_model
-    │   │   ├── model_5-mer.RNA002.csv
-    │   │   └── model_5-mer.RNA004.csv
-    │   ├── Model1
-    │   │   ├── RNA002
-    │   │   │   ├── m5C
-    │   │   │   │   └── Model_100_epoch_relu.h5
-    │   │   │   ├── m6A
-    │   │   │   │   └── Model_100_epoch_relu.h5
-    │   │   │   └── pU
-    │   │   │       └── Model_100_epoch_relu.h5
-    │   │   └── RNA004
-    │   │       ├── m5C
-    │   │       │   └── Model_100_epoch_relu.h5
-    │   │       ├── m6A
-    │   │       │   └── Model_100_epoch_relu.h5
-    │   │       └── pU
-    │   │           └── Model_100_epoch_relu.h5
-    │   └── Model2
-    │       ├── RNA002
-    │       │   ├── m5C
-    │       │   │   └── Model_100_epoch_relu.h5
-    │       │   ├── m6A
-    │       │   │   └── Model_100_epoch_relu.h5
-    │       │   └── pU
-    │       │       └── Model_100_epoch_relu.h5
-    │       └── RNA004
-    │           ├── m5C
-    │           │   └── Model_100_epoch_relu.h5
-    │           ├── m6A
-    │           │   └── Model_100_epoch_relu.h5
-    │           └── pU
-    │               └── Model_100_epoch_relu.h5
-    └── SWARM_scripts
-        ├── predict
-        │   ├── DL_models.py
-        │   ├── network_21122023.py
-        │   ├── network_2132024.py
-        │   ├── network_27082022.py
-        │   ├── predict_model1_from_pickle.py
-        │   ├── predict_model1_parallel_modbam.py
-        │   └── predict_model1_parallel.py
-        ├── preprocess
-        │   ├── argagg.hpp
-        │   ├── build.sh
-        │   ├── check_RNA_kit.cpp
-        │   ├── Makefile
-        │   ├── split_bams.py
-        │   ├── SWARM_preprocess.cpp
-        │   ├── SWARM_preprocess.py
-        │   ├── SWARM_preprocess_target_9mers.cpp
-        │   └── SWARM_preprocess_targets.cpp
-        ├── process_modbam.py
-        ├── SWARM_diff.py
-        ├── SWARM_read_level.py
-        ├── SWARM_site_level.py
-        └── train_models
-            ├── assemble_data.py
-            ├── network_27082022.py
-            ├── split_training_by_9mers.py
-            ├── train_model1.py
-            └── trim_tsv_events.py
-```
