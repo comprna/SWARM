@@ -14,7 +14,7 @@ If git lfs cannot be installed, download the models from the dropbox link:
 ```bash
 git clone https://github.com/comprna/SWARM/ && cd SWARM 
 rm -rf SWARM_models
-wget 'https://www.dropbox.com/scl/fi/wghpvv9plhr4mbpwkuqjd/SWARM_models.tar.gz?rlkey=i1z1do97wbgn0stoaakh117qy&st=ih3xs5fa&dl=0' -O SWARM_models.tgz
+wget 'https://zenodo.org/records/22123294/files/SWARM_models.tar.gz' -O SWARM_models.tgz
 tar -xzf SWARM_models.tgz && rm -f SWARM_models.tgz
 ```
 
