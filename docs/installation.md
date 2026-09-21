@@ -9,7 +9,7 @@ git lfs install
 git clone https://github.com/comprna/SWARM/ && cd SWARM 
 ```
 
-If git lfs cannot be installed, download the models from the dropbox link:
+If git lfs cannot be installed, download the models from the Zenodo link:
 
 ```bash
 git clone https://github.com/comprna/SWARM/ && cd SWARM 
