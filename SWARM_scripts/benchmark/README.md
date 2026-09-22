@@ -1,7 +1,7 @@
 ## SWARM benchmarking scripts
 
 ## Read-level benchmark
-Benchmarking dataset (IVT-m_data.tar.gz) and environment container are available on zenodo: https://zenodo.org/uploads/22123294
+Benchmarking dataset and environment container are available on zenodo: https://zenodo.org/uploads/22123294
 
 ```
 cd SWARM/SWARM_scripts/benchmark/read_level
