@@ -1,15 +1,28 @@
 ## SWARM benchmarking scripts
 
 ## Read-level benchmark
-
-Download the benchmarking dataset (IVT-m_data.tar.gz) from zenodo: https://zenodo.org/uploads/22123294
+Benchmarking dataset (IVT-m_data.tar.gz) and environment container are available on zenodo: https://zenodo.org/uploads/22123294
 
 ```
+cd SWARM/SWARM_scripts/benchmark/read_level
+
+# download the container and benchmarking dataset
+wget https://zenodo.org/records/22123294/files/tensorflow_24.01-tf2-py3-pysam.sif
+wget https://zenodo.org/records/22123294/files/IVT-m_data.tar.gz
+
 # extract tar archive 
 tar -xzf IVT-m_data.tar.gz
 
-# run read-level models on IVT data and evaluate predictions against sample modification labels
+# run read-level models on IVT data (~1h total for all models and samples on 1 GPU Volta)
 bash run_read-level_benchmark.sh
+
+# install python libraries for plotting precision/recall if not already installed
+python3 -m venv swarm_plot
+source swarm_plot/bin/activate
+pip install scikit-learn matplotlib
+
+# plot precision recall from read-level predictions on known modification samples (~2min run time)
+python3 plot_read_level_benchmark.py
 
 ```
 
