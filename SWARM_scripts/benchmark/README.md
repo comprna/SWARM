@@ -27,8 +27,10 @@ python3 plot_read_level_benchmark.py
 ```
 
 ## Site-level benchmark
+Raw reads obtained for this study are available from https://www.ebi.ac.uk/ena/browser/view/PRJEB106788 and public data from other studies is outlined in the paper
 
-### First run read-level and site-level models on a transcriptome dataset
+Instructions on processing raw reads for SWARM outputs are outlined at https://github.com/comprna/SWARM/tree/main#preprocess-raw-signals
+### run read-level and site-level models on a transcriptome dataset
 ```
 # read-level
 singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT
