@@ -139,9 +139,8 @@ You can run scripts from the SWARM repo using singularity and /opt/SWARM/path/to
 ```
 # For example to run SWARM_read_level.py located at SWARM/SWARM_scripts/SWARM_read_level.py
 singularity exec --nv SWARM.sif python3 /opt/SWARM/SWARM_scripts/SWARM_read_level.py --OPTIONS
-
-# The image file was tested on x86-64 Linux systems running CentOS and Ubuntu, and with NVIDIA Volta, Hopper, and Blackwell GPUs.
 ```
+*The image file was tested on x86-64 Linux systems running CentOS and Ubuntu, and with NVIDIA Volta, Hopper, and Blackwell GPUs.
 
 ## Building from source
 For more advanced users and users with tensorflow already installed and GPU-configured. Skip if using singularity.
