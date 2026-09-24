@@ -1,5 +1,19 @@
 # Install SWARM
 
+## Using containerised environment
+If tensorflow with GPU configuration is not pre-installed or there are issues with dependencies, we provide a containerised environment:
+https://zenodo.org/records/22123294
+
+You can run scripts from the SWARM repo using singularity and /opt/SWARM/path/to/script
+```
+# For example to run SWARM_read_level.py located at SWARM/SWARM_scripts/SWARM_read_level.py
+singularity exec --nv SWARM.sif python3 /opt/SWARM/SWARM_scripts/SWARM_read_level.py --OPTIONS
+
+#The image was built using singularity v3.11.0 and GO v1.18.2
+
+#The image was tested on x86-64 Linux systems running CentOS and Ubuntu, and with NVIDIA Volta, Hopper, and Blackwell GPUs
+```
+
 ## Download the code and models
 
 Simply clone from github (install lfs to download large h5 files):
@@ -41,15 +55,5 @@ python3 -m pip install pysam==0.22.1 numpy==1.26.2 pandas==2.2.0 scikit-learn==1
 # make sure to activate the venv before running SWARM read-level and site-level prediction
 module load tensorflow/2.15.0
 source /PATH/TO/swarm_env/bin/activate
-```
-
-### Using containerised environment
-If tensorflow with GPU configuration is not pre-installed or there are issues with dependencies, we provide a containerised environment with tensorflow and pysam:
-https://zenodo.org/records/22123294
-```
-# You can use singularity to run read-level and site-level prediction:
-singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 script.py ...
-
-# Environment tested on NCI gadi HPC using singularity version 3.11.3 and NVIDIA Volta GPUs
 ```
 
