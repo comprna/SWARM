@@ -2,16 +2,18 @@
 
 ## Read-level benchmark
 Benchmarking dataset and environment container are available on zenodo: https://zenodo.org/uploads/22123294
-
 ```
-cd SWARM/SWARM_scripts/benchmark/read_level
-
-# download the container and benchmarking dataset
+# download the SWARM image file (if not done already)
+cd SWARM/
 wget https://zenodo.org/records/22123294/files/SWARM.sif
+
+# download the benchmarking dataset
+cd SWARM_scripts/benchmark/read_level
 wget https://zenodo.org/records/22123294/files/IVT-m_data.tar.gz
 
 # extract tar archive 
 tar -xzf IVT-m_data.tar.gz
+rm -f IVT-m_data.tar.gz
 
 # run read-level models on IVT data (~1h total for all models and samples on 1 GPU Volta)
 bash run_read-level_benchmark.sh
