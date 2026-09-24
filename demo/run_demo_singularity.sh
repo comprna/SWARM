@@ -1,13 +1,14 @@
 #!/bin/bash
+module load singularity
 
 # Update SIF to downloaded path if not in /path/to/SWARM
-SIF=../tensorflow_24.01-tf2-py3-pysam.sif
+SIF=../SWARM.sif
 
 FASTA=reference.fa
 BLOW5=reads.blow5
 SAM=events.sam
 
-SCRIPTDIR=../SWARM_scripts
+SCRIPTDIR=/opt/SWARM/SWARM_scripts
 
 for MOD in "m6A" "pU"; do
         OUT=$PWD/$MOD
