@@ -18,7 +18,8 @@ Benchmarking scripts available at https://github.com/comprna/SWARM/tree/main/SWA
      *   [Event alignment](#event-alignment)
    
    * [Detect RNA modificatios](#detect-rna-modifications)
-     * [Installation](#installation)
+     * [Quick start](#quick-start)  
+     * [Building from source](#building-from-source)
      * [Read-level single-base detection](#read-level-single-base-detection)
      * [Site-level detection](#site-level-detection)
      * [Differential modification test](#differential-modification-test)
@@ -126,16 +127,32 @@ nanopolish eventalign -t 48 --reads $fastq --bam $bam_file \
 # Detect RNA modifications
 ------------------------------------------
 
-## Installation
-Simply clone from github (install lfs to download large h5 files)
+## Quick start
+We provide a containerised environment with compiled binaries, dependencies, and models on Zenodo:
+https://zenodo.org/records/22123294
 
+```
+wget https://zenodo.org/records/22123294/files/SWARM.sif
+```
+You can run scripts from the SWARM repo using singularity and /opt/SWARM/path/to/script
+
+```
+# For example to run SWARM_read_level.py located at SWARM/SWARM_scripts/SWARM_read_level.py
+singularity exec --nv SWARM.sif python3 /opt/SWARM/SWARM_scripts/SWARM_read_level.py --OPTIONS
+
+# The image file was tested on x86-64 Linux systems running CentOS and Ubuntu, and with NVIDIA Volta, Hopper, and Blackwell GPUs.
+```
+
+## Building from source
+For more advanced users and users with tensorflow already installed and GPU-configured. Skip if using singularity.
+
+Clone SWARM from github (install lfs to download model h5 files)
 ```
 git lfs install
 git clone https://github.com/comprna/SWARM/ && cd SWARM
 ```
 
-This step is highly recommended and required for using our C++ preprocessing of sam event files. Compiling SWARM_preprocess and prerequisites should take ~ 2 minutes. Can skip if using eventalign.tsv format (much slower and much more storage required).
-
+Compile SWARM_preprocess and prerequisites, should take ~2 minutes.
 ```
 cd SWARM_scripts/preprocess/
 
@@ -143,12 +160,6 @@ cd SWARM_scripts/preprocess/
 bash build.sh
 
 ```
-
-### Dependencies
-
-SWARM supports GPU inference with tensorflow, tested with versions 2.8.0 and 2.15.0. 
-
-### Using pre-installed tensorflow
 If your HPC has a tensorflow module, simply load tensorflow and use the loaded python path for creating venv:
 ```
 module load tensorflow/2.15.0
@@ -160,70 +171,31 @@ python3 -m pip install pysam==0.22.1 numpy==1.26.2 pandas==2.2.0 scikit-learn==1
 module load tensorflow/2.15.0
 source /PATH/TO/swarm_env/bin/activate
 ```
+If tensorflow is not pre-installed contact your HPC support or follow the official guide: https://www.tensorflow.org/install 
 
-### Using containerised environment
-If tensorflow with GPU configuration is not pre-installed or there are issues with dependencies, we provide a containerised environment with tensorflow and pysam:
-https://zenodo.org/records/22123294
-```
-# You can use singularity to run read-level and site-level prediction:
-singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 script.py ...
-
-# Environment tested on NCI gadi HPC using singularity version 3.11.3 and NVIDIA Volta GPUs
-```
-
-
-## Read-level single-base detection
-
-### sam + slow5 preprocessing (preferred)
-
-Use this approach for faster and simultaneous preprocessing + model inference. Run build.sh from above section.
-
-Models for RNA002 or RNA004 chemistry are automatically selected based on the blow5 data. 
+## Read-level single-base detection 
 
 Example bash code to run SWARM read-level prediction:
 
 ```
+MOD=m6A    # [<m6A> <m5C> <pU>]   
+FASTA=Homo_sapiens.GRCh38.cdna.fa
+BLOW5=Hek293_mRNA.blow5
+SAM=Hek293_mRNA_f5C.events.sam
+OUT=Hek293_mRNA.$MOD.pred.tsv
 
-export MOD=m6A    # [<m6A> <m5C> <pU>]   
-export FASTA=Homo_sapiens.GRCh38.cdna.fa
-export BLOW5=Hek293_mRNA.blow5
-export SAM=Hek293_mRNA_f5C.events.sam
-export OUT=Hek293_mRNA.$MOD.pred.tsv
+# using singularity
+SCRIPT=/opt/SWARM/SWARM_scripts/SWARM_read_level.py
+singularity exec --nv SWARM.sif python3 $SCRIPT -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT
 
 # using pre-installed tensorflow
 module load tensorflow/2.15.0
 source /PATH/TO/swarm_env/bin/activate
-python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT
-
-# or using singularity
-singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT
+SCRIPT=path/to/SWARM_read_level.py
+python3 $SCRIPT -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT
 ```
 
-### eventalign.tsv preprocessing
-
-Alternatively, preprocessing and prediction can be run separately from eventalign.tsv, but that involves large temp files.
-
-First preprocess the event alignments.
-
-```
-export MOD=pU
-export BAM=Hek293_mRNA_f5C.bam
-export EVENTS=Hek293_mRNA.events.tsv
-export OUT=Hek293_mRNA_pU
-
-python3 SWARM_read_level.py --preprocess -m $MOD --bam BAM --nanopolish $EVENTS -o $OUT
-```
-
-Then predict modification states.
-
-```
-export MOD=pU
-export PICKLE=Hek293_mRNA_pU_T.pickle
-export OUT=Hek293_mRNA_pU.pred.tsv
-
-python3 SWARM_read_level.py --predict -m $MOD --pickle $PICKLE -o $OUT
-```
-
+*Models for RNA002 or RNA004 chemistry are automatically selected based on the blow5 metadata.
 
 ## Site-level detection
 
@@ -240,14 +212,18 @@ Run site-level detection on sorted read-level data:
 INPUT=Hek293_mRNA_pooled_pU.pred.tsv.sorted
 OUT=Hek293_mRNA_pooled_pU.site.pred.tsv
 
+# using singularity
+SCRIPT=/opt/SWARM/SWARM_scripts/SWARM_site_level.py
+singularity exec --nv SWARM.sif python3 $SCRIPT -i $INPUT -o $OUT
+
 # using pre-installed tensorflow
 module load tensorflow/2.15.0
 source /PATH/TO/swarm_env/bin/activate
-python3 SWARM_site_level.py -i $INPUT -o $OUT
-
-# or using singularity
-singularity exec --nv tensorflow_24.01-tf2-py3-pysam.sif python3 SWARM_site_level.py -i $INPUT -o $OUT
+SCRIPT=/path/to/SWARM/SWARM_scripts/SWARM_site_level.py
+python3 $SCRIPT -i $INPUT -o $OUT
 ```
+
+*Site-level models are automatically selected based on the read-level tsv files.
 
 ## Differential modification test
 
@@ -269,24 +245,24 @@ python3 SWARM_diff.py --data_file diff_config.tsv --output_file diff_out.tsv -n 
 ```
 
 ## modsam output
-Use --sam tag with SWARM_read_level.py to get mod.sam output (pred.tsv is still produced too).
+Use --modsam tag with SWARM_read_level.py to get mod.sam output (pred.tsv is still produced too).
 
 Note that this runs slower as multithreaded preprocessing is not implemented with modsam.
 
 ```
-python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT --sam
+python3 SWARM_read_level.py -m $MOD --sam $SAM --fasta $FASTA --raw $BLOW5 -o $OUT --modsam
 ```
 
 mod.sam can also be generated from sorted read-level pred.tsv files.
 
-This should be faster and also enables filtering of sites for cleaner results. 
+This should be faster on large datasets and also enables filtering of sites for cleaner visualisation. 
 
 ```
 prediction_sorted=Hek293_mRNA_pooled_pU.pred.tsv.sorted
-SAM=Hek293_mRNA_f5C.events.sam
+BAM=Hek293_mRNA.bam
 SITES=Hek293_mRNA_pooled_pU.site.pred.tsv
 OUT=Hek293_mRNA_pooled_pU.site.pred.tsv
-python3 SWARM_make_modsam.py -i $prediction_sorted -s $SAM -m $SITES -o $OUT
+python3 convert_tsv_to_modsam.py -i $prediction_sorted -b $BAM --site_level $SITES -o $OUT
 ```
 
 
