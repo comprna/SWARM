@@ -107,6 +107,24 @@ Cutoffs for different contexts:
 | RNA004 | m5C          | all-context     | 0.99999999989   |
 | RNA004 | m5C          | NSUN6-only      | 0.988           |
 
-### Motif filtering
+### Significant site filtering
+
+postprocess/get_significant_sites.py filters site-level outputs for site-level probabilities and writer motifs 
+
+For example:
+```bash
+get_significant_sites.py -i $OUT.sites.pred.tsv -o $OUT.sig.sites.bed --kit RNA002 -m $MOD --context writer
+
+```
 
 ### Liftover to genome
+
+Install R2Dtool from : https://github.com/comprna/R2Dtool
+
+```bash
+# covert site-level output to bed
+bash /PATH/TO/R2Dtool/scripts/cheui_to_bed.sh site-level.tsv site-level.bed
+
+# run liftover (requires gtf matching the reference used for previous alignment steps)
+r2d liftover -H -g human.gtf -i site-level.bed > site-level.lifted.bed
+```
