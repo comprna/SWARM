@@ -128,19 +128,21 @@ nanopolish eventalign -t 48 --reads $fastq --bam $bam_file \
 ------------------------------------------
 
 ## Quick start
-We provide a containerised environment with compiled binaries, dependencies, and models on Zenodo:
-https://zenodo.org/records/22123294
-
+We provide a standalone containerised environment for running SWARM on Zenodo:https://zenodo.org/records/22123294
 ```
 wget https://zenodo.org/records/22123294/files/SWARM.sif
 ```
+singularity can be installed as per: https://docs.sylabs.io/guides/3.11/user-guide/quick_start.html#quick-installation-steps
+
 You can run scripts from the SWARM repo using singularity and /opt/SWARM/path/to/script
 
 ```
 # For example to run SWARM_read_level.py located at SWARM/SWARM_scripts/SWARM_read_level.py
 singularity exec --nv SWARM.sif python3 /opt/SWARM/SWARM_scripts/SWARM_read_level.py --OPTIONS
 ```
-*The image file was tested on x86-64 Linux systems running CentOS and Ubuntu, and with NVIDIA Volta, Hopper, and Blackwell GPUs.
+*The image was built using singularity v3.11.0 and GO v1.18.2
+
+*The image was tested on x86-64 Linux systems running CentOS and Ubuntu, and with NVIDIA Volta, Hopper, and Blackwell GPUs
 
 ## Building from source
 For more advanced users and users with tensorflow already installed and GPU-configured. Skip if using singularity.
