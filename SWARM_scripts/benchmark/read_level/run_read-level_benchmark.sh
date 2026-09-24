@@ -1,8 +1,8 @@
 module load singularity
 
-SIF=tensorflow_24.01-tf2-py3-pysam.sif
+SIF=../../../SWARM.sif
 FASTA=IVT-m_data/I-M_combined.fasta
-SCRIPT=../../SWARM_read_level.py ;
+SCRIPT=/opt/SWARM/SWARM_scripts/SWARM_read_level.py
 
 mkdir outputs
 
