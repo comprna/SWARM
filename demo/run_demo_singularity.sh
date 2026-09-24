@@ -1,5 +1,6 @@
 #!/bin/bash
 module load singularity
+module load samtools
 
 # Update SIF to downloaded path if not in /path/to/SWARM
 SIF=../SWARM.sif
