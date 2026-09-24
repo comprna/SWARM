@@ -15,3 +15,5 @@ for target_mod in "m6A" "m5C" "pU"; do
         done ;
 
 done
+
+singularity exec $SIF python3 plot_read_level_benchmark.py
