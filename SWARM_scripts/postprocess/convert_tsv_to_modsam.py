@@ -8,13 +8,13 @@ import argparse
 
 
 
-parser = argparse.ArgumentParser(prog='convert_model1_to_modsam v1.0')
+parser = argparse.ArgumentParser(prog='convert_tsv_to_modsam v1.0')
 
 OPTIONAL = parser._action_groups.pop()
 REQUIRED = parser.add_argument_group('required arguments')
 
-REQUIRED.add_argument("-i", "--m1_input",
-                      help="path to model1 prediction tsv output",
+REQUIRED.add_argument("-i", "--read_level_input",
+                      help="path to read-level prediction tsv output",
                       metavar='\b',
                       required=True)
 
@@ -28,17 +28,17 @@ REQUIRED.add_argument("-o", "--file_out",
                       metavar='\b',
                       required=True)
 
-OPTIONAL.add_argument("--model2",
-                          help="Model2 predictions",
+OPTIONAL.add_argument("--site_level",
+                          help="site_level predictions",
                           default=None)
 
 OPTIONAL.add_argument("--cutoff",
-                          help="Model2 cutoff",
+                          help="site_level cutoff",
                           default=0,
                           type=float)
 
-OPTIONAL.add_argument("--min_m2_stoich",
-                          help="Model2 cutoff",
+OPTIONAL.add_argument("--min_site_level_stoich",
+                          help="site_level cutoff",
                           default=0.1,
                           type=float)
 
@@ -66,18 +66,18 @@ def get_MM_tag(MMs):
     return MM + ";"
 
 
-model2_set = set()
-if ARGS.model2:
-    with open(ARGS.model2) as inf:
+site_level_set = set()
+if ARGS.site_level:
+    with open(ARGS.site_level) as inf:
         inf.readline()
         for line in inf:
             line_lst = line.strip().split("\t")
             contig,pos = line_lst[:2]
-            stoich,m2_p = list(map(float,line_lst[-2:]))
-            if stoich <= ARGS.min_m2_stoich:
-                m2_p = 0
-            if m2_p > ARGS.cutoff:
-                model2_set.add(f"{contig}_{pos}")
+            stoich,site_level_p = list(map(float,line_lst[-2:]))
+            if stoich <= ARGS.min_site_level_stoich:
+                site_level_p = 0
+            if site_level_p > ARGS.cutoff:
+                site_level_set.add(f"{contig}_{pos}")
 
 
 prev_read_name, MMs, MLs = "",[],[]
@@ -85,7 +85,7 @@ BAM_ALIGNMENT = pysam.AlignmentFile(ARGS.bam, "rb")
 HEADER_BAM = BAM_ALIGNMENT.header.copy()
 READ_INDEXED = pysam.IndexedReads(BAM_ALIGNMENT, multiple_iterators=True)
 READ_INDEXED.build()
-with open(ARGS.m1_input) as inf:
+with open(ARGS.read_level_input) as inf:
     with pysam.AlignmentFile(file_out + ".mod.sam", "wh", header=HEADER_BAM) as modsam_file:
         for line in inf:
             key, m1_p, label = line.strip().split("\t")
@@ -115,7 +115,7 @@ with open(ARGS.m1_input) as inf:
             if readName == prev_read_name:
                 if int(readPos) > 0 or len(MMs) == 0:
                     try:
-                        if not ARGS.model2 or site_index in model2_set:
+                        if not ARGS.site_level or site_index in site_level_set:
                             col=math.floor(m1_p*255)
                         else:
                             col = 0
